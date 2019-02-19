@@ -1,0 +1,131 @@
+# Common processing
+# Created date: 2019/2/19
+# Author: mariko ohtsuka
+# library, function section ------
+# install.packages('readxl')
+library("readxl")
+#' @title
+#' AggregateLength
+#' @description
+#' Returns the total and percentage of the argument's columns
+#' @param
+#' target_column : Column to be summed
+#' column_name : Name of output columns
+#' @return
+#' data frame
+AggregateLength <- function(target_column, column_name){
+  df <- aggregate(target_column, by=list(target_column), length, drop=F)
+  df[is.na(df)] <- 0
+  df$per <- round(prop.table(df[2]) * 100, digits=1)
+  colnames(df) <- column_name
+  return(df)
+}
+EditColnames <- function(header, columns_name){
+  temp_colnames <- paste0(header, columns_name)
+  temp_colnames[1] <- columns_name[1]
+  return(temp_colnames)
+}
+Aggregate_sp_mr <- function(df_sp, df_mr, input_column_name, output_column_name){
+  temp_sp <- AggregateLength(df_sp[, input_column_name], output_column_name)
+  colnames(temp_sp) <- EditColnames("sp_", output_column_name)
+  temp_mr <- AggregateLength(df_mr[, input_column_name], output_column_name)
+  colnames(temp_sp) <- EditColnames("mr_", output_column_name)
+  df <- merge(temp_sp, temp_mr, by=output_column_name[1], all=T, incomparables=NA)
+  return(df)
+}
+#' @title
+#' SummaryValue
+#' @description
+#' Return summary and standard deviation of the column of arguments
+#' @param
+#' target_column : Column to be summarized
+#' @return
+#' Summary and standard deviation vector
+SummaryValue <- function(target_column){
+  temp_summary <- summary(target_column)
+  temp_sd <- sd(target_column)
+  names(temp_sd) <- "Sd."
+  return(c(temp_summary, temp_sd))
+}
+Summary_sp_mr <- function(df_sp, df_mr, column_name){
+  temp_sp <- SummaryValue(df_sp[ , column_name])
+  temp_mr <- SummaryValue(df_mr[ , column_name])
+  df <- cbind(data.frame(temp_sp), data.frame(temp_mr))
+  colnames(df) <- c(paste0("sp_", column_name), paste0("mr_", column_name))
+  return(df)
+}
+# Constant section ------
+kOption_csv_name <- "option.csv"
+kOption_csv_fileEncoding <- "cp932"
+kNA_lb <- -1
+kCTCAEGrade <- c(1:5)
+kBirth_Sex_xlsx <- "/RocStent_生年月日,性別.xlsx"
+kExclude_FAS_flag <- 1
+kExclude_SAS_flag <- 2
+kAllocation_csv_name <- "RocStent_[0-9]{6}_[0-9]{4}.csv"
+kAllocation_csv_fileEncoding <- "cp932"
+kSP <- "A"
+kMR <- "B"
+# initialize ------
+Sys.setenv("TZ" = "Asia/Tokyo")
+parent_path <- "/Users/admin/Desktop/NMC-RocStent"
+# log output path
+log_path <- paste0(parent_path, "/log")
+if (file.exists(log_path) == F) {
+  dir.create(log_path)
+}
+# Setting of input/output path
+input_path <- paste0(parent_path, "/input/dst")
+allocation_path <- paste0(parent_path, "/rawdata")
+external_path <<- paste0(parent_path, "/external")
+# If the output folder does not exist, create it
+output_path <- paste0(parent_path, "/output")
+if (file.exists(output_path) == F) {
+  dir.create(output_path)
+}
+# load dataset
+dst_list <- list.files(input_path)
+for (i in 1:length(dst_list)) {
+  tryCatch(load(paste0(input_path, "/", dst_list[i])),
+           error = function(e){warning(paste0("load skip:", dst_list[i]))})
+}
+# Input saihi.csv
+saihi_csv <- read.csv(paste0(external_path, "/", "RocStent_saihi.csv"), as.is=T, fileEncoding="cp932",
+                      stringsAsFactors=F)
+# Input option.csv
+option_csv <- read.csv(paste0(external_path, "/", kOption_csv_name), as.is=T, fileEncoding=kOption_csv_fileEncoding,
+                       stringsAsFactors=F)
+# Input birth date and sex
+birth_date_sex <- read_excel(paste0(external_path, kBirth_Sex_xlsx), sheet=1, col_names=T)
+colnames(birth_date_sex) <- birth_date_sex[1, ]
+birth_date_sex <- birth_date_sex[-1, ]
+birth_date_sex$生年月日 <- as.Date(as.numeric(birth_date_sex$生年月日), origin="1899-12-30")
+sortlist <- order(as.numeric(birth_date_sex$症例登録番号))
+birth_date_sex <- birth_date_sex[sortlist, ]
+# Input allocation.csv
+rawdata_list <- list.files(allocation_path)
+for (i in 1:length(rawdata_list)) {
+  if (length(grep(kAllocation_csv_name,rawdata_list[i]) > 0)) {
+    allocation_csv <- read.csv(paste0(allocation_path, "/", rawdata_list[i]), as.is=T,
+                               fileEncoding=kAllocation_csv_fileEncoding, stringsAsFactors=F)
+  }
+}
+# Set allocation data
+ptdata <- ptdata[order(ptdata$SUBJID), ]
+allocation_csv <- allocation_csv[order(allocation_csv$症例登録番号), ]
+ptdata <- merge(ptdata, allocation_csv, by.x="SUBJID", by.y="症例登録番号", all=T)
+# All registration
+all_ptdata <- ptdata
+all_registration <- as.numeric(nrow(all_ptdata))
+# All qualification(Full Analysis Set)
+#ptdata <- subset(ptdata, SUBJID != 6)
+ptdata <- ptdata
+# A:SP
+# B:MR
+sp_ptdata <- subset(ptdata, ptdata$自動割付 == "A")
+mr_ptdata <- subset(ptdata, ptdata$自動割付 == "B")
+#+ {r}
+all_qualification <- as.numeric(nrow(ptdata))
+# 全治療例
+all_treatment <- all_qualification
+# safety analysis set
