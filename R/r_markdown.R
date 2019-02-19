@@ -21,3 +21,4 @@ if (this_program_path != "") {
 }
 source(paste0(source_path, "/common.R"))
 render("demog.R", output_dir=output_path)
+render("ope.R", output_dir=output_path)
