@@ -39,26 +39,44 @@ Aggregate_sp_mr <- function(df_sp, df_mr, input_column_name, output_column_name)
   names(return_list) <- c("sp_例数", "sp_欠測数", "mr_例数", "mr_欠測数", NULL)
   return(return_list)
 }
+# r Change quantile 'type' within summary.default - Stack Overflow
+# https://stackoverflow.com/questions/27221720/r-change-quantile-type-within-summary-default
+# mySummary <- summary.default
+# body(mySummary)[[3]][[3]][[4]][[3]][[4]] <-
+#  quote(qq <- stats::quantile(object, type = type))
+# formals(mySummary) <- c(formals(mySummary), type = 7)
 #' @title
 #' SummaryValue
 #' @description
 #' Return summary and standard deviation of the column of arguments
 #' @param
-#' target_column : Column to be summarized
+#' input_column : Column to be summarized
 #' @return
 #' Summary and standard deviation vector
-SummaryValue <- function(target_column){
+SummaryValue <- function(input_column){
+  target_na <- subset(input_column, is.na(input_column))
+  target_column <- subset(input_column, !is.na(input_column))
+  temp_mean <- mean(target_column)
   temp_summary <- summary(target_column)
+  temp_median <- median(target_column)
+  temp_quantile <- quantile(target_column, type=2)
+  temp_min <- min(target_column)
+  temp_max <- max(target_column)
   temp_sd <- sd(target_column)
-  names(temp_sd) <- "Sd."
-  return(c(temp_summary, temp_sd))
+  return_list <- c(temp_mean, temp_sd, temp_median, temp_quantile[2], temp_quantile[4], temp_min, temp_max)
+  names(return_list) <- c("Mean", "Sd.", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max.")
+  return(list(length(target_column), length(target_na), return_list))
 }
 Summary_sp_mr <- function(df_sp, df_mr, column_name){
   temp_sp <- SummaryValue(df_sp[ , column_name])
+  output_df_sp <- temp_sp[[3]]
   temp_mr <- SummaryValue(df_mr[ , column_name])
-  df <- cbind(data.frame(temp_sp), data.frame(temp_mr))
+  output_df_mr <- temp_mr[[3]]
+  df <- cbind(data.frame(temp_sp[[3]]), data.frame(temp_mr[[3]]))
   colnames(df) <- c(paste0("sp_", column_name), paste0("mr_", column_name))
-  return(df)
+  return_list <- list(temp_sp[[1]], temp_sp[[2]], temp_mr[[1]], temp_mr[[2]], round(df, digits=1))
+  names(return_list) <- c("sp_例数", "sp_欠測数", "mr_例数", "mr_欠測数", NULL)
+  return(return_list)
 }
 KableList <- function(input_list){
   return(list(unlist(input_list[1:4]), input_list[[5]]))
@@ -111,6 +129,7 @@ birth_date_sex <- birth_date_sex[-1, ]
 birth_date_sex$生年月日 <- as.Date(as.numeric(birth_date_sex$生年月日), origin="1899-12-30")
 sortlist <- order(as.numeric(birth_date_sex$症例登録番号))
 birth_date_sex <- birth_date_sex[sortlist, ]
+birth_date_sex <- subset(birth_date_sex, birth_date_sex[ ,5] == 0)
 # Input allocation.csv
 rawdata_list <- list.files(allocation_path)
 for (i in 1:length(rawdata_list)) {
@@ -127,7 +146,7 @@ ptdata <- merge(ptdata, allocation_csv, by.x="SUBJID", by.y="症例登録番号"
 all_ptdata <- ptdata
 all_registration <- as.numeric(nrow(all_ptdata))
 # All qualification(Full Analysis Set)
-#ptdata <- subset(ptdata, SUBJID != 6)
+ptdata <- subset(ptdata, SUBJID %in% birth_date_sex$症例登録番号)
 ptdata <- ptdata
 # A:SP
 # B:MR
