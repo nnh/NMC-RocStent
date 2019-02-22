@@ -1,3 +1,7 @@
+ReturnN_column <- function(target_column){
+  n_of_all <- length(target_values)
+  n_of_missing <- length(target_)
+}
 # ' demog.R
 # ' Created date: 2019/2/19
 # ' author: mariko ohtsuka
@@ -25,7 +29,7 @@ kable(age_summary, format = "markdown")
 sp_sex <- subset(df_age_sex, df_age_sex$自動割付 == kSP)
 mr_sex <- subset(df_age_sex, df_age_sex$自動割付 == kMR)
 sex <- Aggregate_sp_mr(sp_sex, mr_sex, "性別", c("sex", "count", "per"))
-kable(sex, format = "markdown")
+kable(KableList(sex), format="markdown", align="r")
 #' ## 身長
 hight <- Summary_sp_mr(sp_ptdata, mr_ptdata, "hight")
 kable(hight, format = "markdown")
@@ -38,32 +42,34 @@ kable(bmi, format = "markdown")
 #' ## ASA
 temp_colname <- "ASA"
 asa <- Aggregate_sp_mr(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, "count", "per"))
-kable(asa, format = "markdown")
+kable(KableList(asa), format="markdown", align="r")
+#kable(unlist(asa[1:4]), format = "markdown")
+#kable(asa[[5]], format = "markdown")
 #' ## 原因疾患
 temp_colname <- "cause_disease"
 cause_disease <- Aggregate_sp_mr(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, "count", "per"))
-kable(cause_disease, format = "markdown")
+kable(KableList(cause_disease), format="markdown", align="r")
 #' ## 術前の呼吸状態
 #' ### 術前酸素投与の有無
 temp_colname <- "O2"
 o2 <- Aggregate_sp_mr(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, "count", "per"))
-kable(o2, format = "markdown")
+kable(KableList(o2), format="markdown", align="r")
 #' ### 術前P/F比
 temp_colname <- "pre_PF"
 pre_PF <- Aggregate_sp_mr(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, "count", "per"))
-kable(pre_PF, format = "markdown")
+kable(KableList(pre_PF), format="markdown", align="r")
 #' ## 気道の狭窄部位(主気管を含むか否か)
 ptdata$pre_aw_stenosis
 ptdata$aw_stenosis
 #' ## 予定、緊急
 temp_colname <- "ope"
 ope <- Aggregate_sp_mr(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, "count", "per"))
-kable(ope, format = "markdown")
+kable(KableList(ope), format="markdown", align="r")
 #' ## 心機能異常の有無
 temp_colname <- "ab_cardio_func"
 ab_cardio_func <- Aggregate_sp_mr(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, "count", "per"))
-kable(ab_cardio_func, format = "markdown")
+kable(KableList(ab_cardio_func), format="markdown", align="r")
 #' ## 肺気腫の有無
 temp_colname <- "emphysema"
 emphysema <- Aggregate_sp_mr(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, "count", "per"))
-kable(emphysema, format = "markdown")
+kable(KableList(emphysema), format="markdown", align="r")

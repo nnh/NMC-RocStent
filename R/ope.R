@@ -62,11 +62,12 @@ kable(assist_time, format = "markdown")
 #spO2_n <- Summary_sp_mr(sp_SpO2_1, mr_SpO2_1, "SpO2_n")
 #kable(spO2_n, format = "markdown")
 #' ## 術中 SpO2 最低値(ノイズを除く)
-#'
-#              術中血液ガス分析 pH 平均値
-#' ## PaCO2 平均値
-#' ## PaO2 平均値
-#' ## P/F 比平均値
+
+#' ## 術中血液ガス分析
+#' ### pH 平均値
+#' ### PaCO2 平均値
+#' ### PaO2 平均値
+#' ### P/F 比平均値
 #          ETCO2 最大値(mmHg)
 #              術中最高 BIS 値 術中最低 BIS 値
 #            最低プロポフォール TCI 濃度 (μg/ml) 最高プロポフォール TCI 濃度 (μg/ml)

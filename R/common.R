@@ -14,11 +14,13 @@ library("readxl")
 #' @return
 #' data frame
 AggregateLength <- function(target_column, column_name){
+  target_na <- subset(target_column, is.na(target_column))
+  target_not_na <- subset(target_column, !is.na(target_column))
   df <- aggregate(target_column, by=list(target_column), length, drop=F)
   df[is.na(df)] <- 0
   df$per <- round(prop.table(df[2]) * 100, digits=1)
   colnames(df) <- column_name
-  return(df)
+  return(list(length(target_not_na), length(target_na), df))
 }
 EditColnames <- function(header, columns_name){
   temp_colnames <- paste0(header, columns_name)
@@ -27,11 +29,15 @@ EditColnames <- function(header, columns_name){
 }
 Aggregate_sp_mr <- function(df_sp, df_mr, input_column_name, output_column_name){
   temp_sp <- AggregateLength(df_sp[, input_column_name], output_column_name)
-  colnames(temp_sp) <- EditColnames("sp_", output_column_name)
+  output_df_sp <- temp_sp[[3]]
+  colnames(output_df_sp) <- EditColnames("sp_", output_column_name)
   temp_mr <- AggregateLength(df_mr[, input_column_name], output_column_name)
-  colnames(temp_sp) <- EditColnames("mr_", output_column_name)
-  df <- merge(temp_sp, temp_mr, by=output_column_name[1], all=T, incomparables=NA)
-  return(df)
+  output_df_mr <- temp_mr[[3]]
+  colnames(output_df_mr) <- EditColnames("mr_", output_column_name)
+  df <- merge(output_df_sp, output_df_mr, by=output_column_name[1], all=T, incomparables=NA)
+  return_list <- list(temp_sp[[1]], temp_sp[[2]], temp_mr[[1]], temp_mr[[2]], df)
+  names(return_list) <- c("sp_例数", "sp_欠測数", "mr_例数", "mr_欠測数", NULL)
+  return(return_list)
 }
 #' @title
 #' SummaryValue
@@ -53,6 +59,9 @@ Summary_sp_mr <- function(df_sp, df_mr, column_name){
   df <- cbind(data.frame(temp_sp), data.frame(temp_mr))
   colnames(df) <- c(paste0("sp_", column_name), paste0("mr_", column_name))
   return(df)
+}
+KableList <- function(input_list){
+  return(list(unlist(input_list[1:4]), input_list[[5]]))
 }
 # Constant section ------
 kOption_csv_name <- "option.csv"
