@@ -8,20 +8,8 @@ kCheckBox_head <- "aw_stenosis_"
 # Main section ------
 #' ## 気道狭窄状態
 #' ### 狭窄部位
-option_checkbox <- subset(option_csv, Option.name == "気道狭窄部位")
-df_table <- data.frame(matrix(rep(NA, 5), nrow=1))[numeric(0), ]
-for (i in 1:nrow(option_checkbox)) {
-  temp_colname <- paste0(kCheckBox_head, option_checkbox[i, "Option..Value.code"])
-  temp_aggregate <- Aggregate_sp_mr(sp_ptdata, mr_ptdata, temp_colname,
-                                    c(kCheckBox_head, "count", "per"))
-  temp_aggregate_df <- temp_aggregate[[kTableIndex]]
-  temp_T <- subset(temp_aggregate_df, temp_aggregate_df[ ,kCheckBox_head] == T)
-  temp_T[1, 1] <- option_checkbox[i, "Option..Value.name"]
-  df_table <- rbind(df_table, data.frame(as.matrix(temp_T), row.names=NULL))
-  assign(temp_colname, temp_T)
-}
-output_df <- list(temp_aggregate[1], temp_aggregate[2], temp_aggregate[3], temp_aggregate[4], df_table)
-kable(KableList(output_df), format = "markdown")
+aw_stenosis <- AggregateCheckbox("気道狭窄部位", T, kCheckBox_head, list(sp_ptdata, mr_ptdata))
+kable(KableList(aw_stenosis), format = "markdown")
 #' ### 狭窄程度(%)
 aw_stenosis_p <- Summary_sp_mr(sp_ptdata, mr_ptdata, "aw_stenosis_p")
 kable(KableList(aw_stenosis_p), format = "markdown", align="r")

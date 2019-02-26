@@ -72,6 +72,28 @@ Summary_sp_mr <- function(df_sp, df_mr, column_name){
   names(return_list) <- c("sp_例数", "sp_欠測数", "mr_例数", "mr_欠測数", NULL)
   return(return_list)
 }
+AggregateCheckbox <- function(option_name, group_flag, checkbox_head, input_df_list){
+  if (group_flag == T) {
+    col_count <- 5
+  } else {
+    col_count <- NA
+  }
+  option_checkbox <- subset(option_csv, Option.name == option_name)
+  df_table <- data.frame(matrix(rep(NA, 5), nrow=col_count))[numeric(0), ]
+  for (i in 1:nrow(option_checkbox)) {
+    temp_colname <- paste0(checkbox_head, option_checkbox[i, "Option..Value.code"])
+    if (group_flag == T) {
+      temp_aggregate <- Aggregate_sp_mr(input_df_list[[1]], input_df_list[[2]], temp_colname,
+                                        c(checkbox_head, "count", "per"))
+      temp_aggregate_df <- temp_aggregate[[kTableIndex]]
+      temp_T <- subset(temp_aggregate_df, temp_aggregate_df[ ,checkbox_head] == T)
+    }
+    temp_T[1, 1] <- option_checkbox[i, "Option..Value.name"]
+    df_table <- rbind(df_table, data.frame(as.matrix(temp_T), row.names=NULL))
+  }
+  output_df <- list(temp_aggregate[1], temp_aggregate[2], temp_aggregate[3], temp_aggregate[4], df_table)
+  return(output_df)
+}
 KableList <- function(input_list){
   return(list(unlist(input_list[1:4]), input_list[[kTableIndex]]))
 }
