@@ -4,29 +4,24 @@
 # ' output:
 # '   html_document:
 # Constant section ------
+kCheckBox_head <- "aw_stenosis_"
 # Main section ------
 #' ## 気道狭窄状態
 #' ### 狭窄部位
-option_aw_stenosis <- subset(option_csv, Option.name == "気道狭窄部位")
-temp_colname <- "aw_stenosis"
-for (i in 1:2) {
-
+option_checkbox <- subset(option_csv, Option.name == "気道狭窄部位")
+df_table <- data.frame(matrix(rep(NA, 5), nrow=1))[numeric(0), ]
+for (i in 1:nrow(option_checkbox)) {
+  temp_colname <- paste0(kCheckBox_head, option_checkbox[i, "Option..Value.code"])
+  temp_aggregate <- Aggregate_sp_mr(sp_ptdata, mr_ptdata, temp_colname,
+                                    c(kCheckBox_head, "count", "per"))
+  temp_aggregate_df <- temp_aggregate[[kTableIndex]]
+  temp_T <- subset(temp_aggregate_df, temp_aggregate_df[ ,kCheckBox_head] == T)
+  temp_T[1, 1] <- option_checkbox[i, "Option..Value.name"]
+  df_table <- rbind(df_table, data.frame(as.matrix(temp_T), row.names=NULL))
+  assign(temp_colname, temp_T)
 }
-sp_aw_stenosis_all <- AggregateLength(sp_ptdata[ ,temp_colname],temp_colname)
-sp_aw_stenosis_n <- sp_aw_stenosis_all[[1]]
-sp_aw_stenosis_na <- sp_aw_stenosis_all[[2]]
-mr_aw_stenosis_all <- AggregateLength(mr_ptdata[ ,temp_colname],temp_colname)
-mr_aw_stenosis_n <- mr_aw_stenosis_all[[1]]
-mr_aw_stenosis_na <- mr_aw_stenosis_all[[2]]
-for (i in 1:nrow(option_aw_stenosis)) {
-  temp_colname <- paste0("aw_stenosis_", option_aw_stenosis[i, "Option..Value.code"])
-  temp_count <- nrow(subset(sp_ptdata, sp_ptdata[temp_colname] == T))
-  AggregateLength(sp_ptdata[ ,temp_colname], temp_colname)
-#  sp_ptdata_aw_stenosis[ ,temp_colname] <- ifelse(sp_ptdata_aw_stenosis[ ,temp_colname] == T, 1, 0)
-#  mr_ptdata_aw_stenosis[ ,temp_colname] <- ifelse(mr_ptdata_aw_stenosis[ ,temp_colname] == T, 1, 0)
-#  aw_stenosis <- Aggregate_sp_mr(sp_ptdata_aw_stenosis, mr_ptdata_aw_stenosis, temp_colname, c(temp_colname, "count", "per"))
-}
-#kable(KableList(aw_stenosis), format = "markdown")
+output_df <- list(temp_aggregate[1], temp_aggregate[2], temp_aggregate[3], temp_aggregate[4], df_table)
+kable(KableList(output_df), format = "markdown")
 #' ### 狭窄程度(%)
 aw_stenosis_p <- Summary_sp_mr(sp_ptdata, mr_ptdata, "aw_stenosis_p")
 kable(KableList(aw_stenosis_p), format = "markdown", align="r")

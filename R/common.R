@@ -39,12 +39,6 @@ Aggregate_sp_mr <- function(df_sp, df_mr, input_column_name, output_column_name)
   names(return_list) <- c("sp_例数", "sp_欠測数", "mr_例数", "mr_欠測数", NULL)
   return(return_list)
 }
-# r Change quantile 'type' within summary.default - Stack Overflow
-# https://stackoverflow.com/questions/27221720/r-change-quantile-type-within-summary-default
-# mySummary <- summary.default
-# body(mySummary)[[3]][[3]][[4]][[3]][[4]] <-
-#  quote(qq <- stats::quantile(object, type = type))
-# formals(mySummary) <- c(formals(mySummary), type = 7)
 #' @title
 #' SummaryValue
 #' @description
@@ -79,7 +73,7 @@ Summary_sp_mr <- function(df_sp, df_mr, column_name){
   return(return_list)
 }
 KableList <- function(input_list){
-  return(list(unlist(input_list[1:4]), input_list[[5]]))
+  return(list(unlist(input_list[1:4]), input_list[[kTableIndex]]))
 }
 # Constant section ------
 kOption_csv_name <- "option.csv"
@@ -93,6 +87,7 @@ kAllocation_csv_name <- "RocStent_[0-9]{6}_[0-9]{4}.csv"
 kAllocation_csv_fileEncoding <- "cp932"
 kSP <- "A"
 kMR <- "B"
+kTableIndex <- 5
 # initialize ------
 Sys.setenv("TZ" = "Asia/Tokyo")
 parent_path <- "/Users/admin/Desktop/NMC-RocStent"

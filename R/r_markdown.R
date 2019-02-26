@@ -20,5 +20,5 @@ if (this_program_path != "") {
   source_path <- paste(temp_path[-length(temp_path)], collapse="/")
 }
 source(paste0(source_path, "/common.R"))
-render("demog.R", output_dir=output_path)
-render("ope.R", output_dir=output_path)
+render(paste0(source_path, "/demog.R"), output_dir=output_path)
+render(paste0(source_path, "/ope.R"), output_dir=output_path)
