@@ -22,21 +22,26 @@ AggregateLength <- function(target_column, column_name){
   colnames(df) <- column_name
   return(list(length(target_not_na), length(target_na), df))
 }
+#' @title
+#'
 EditColnames <- function(header, columns_name){
   temp_colnames <- paste0(header, columns_name)
   temp_colnames[1] <- columns_name[1]
   return(temp_colnames)
 }
-Aggregate_sp_mr <- function(df_sp, df_mr, input_column_name, output_column_name){
-  temp_sp <- AggregateLength(df_sp[, input_column_name], output_column_name)
-  output_df_sp <- temp_sp[[3]]
-  colnames(output_df_sp) <- EditColnames("sp_", output_column_name)
-  temp_mr <- AggregateLength(df_mr[, input_column_name], output_column_name)
-  output_df_mr <- temp_mr[[3]]
-  colnames(output_df_mr) <- EditColnames("mr_", output_column_name)
-  df <- merge(output_df_sp, output_df_mr, by=output_column_name[1], all=T, incomparables=NA)
-  return_list <- list(temp_sp[[1]], temp_sp[[2]], temp_mr[[1]], temp_mr[[2]], df)
-  names(return_list) <- c("sp_例数", "sp_欠測数", "mr_例数", "mr_欠測数", NULL)
+#' @title
+#'
+Aggregate_Group <- function(df_A, df_B, input_column_name, output_column_name){
+  temp_sp <- AggregateLength(df_A[, input_column_name], output_column_name)
+  output_df_A <- temp_sp[[kDfIndex]]
+  colnames(output_df_A) <- EditColnames(paste0(kGroup_A, "_"), output_column_name)
+  temp_mr <- AggregateLength(df_B[, input_column_name], output_column_name)
+  output_df_B <- temp_mr[[kDfIndex]]
+  colnames(output_df_B) <- EditColnames(paste0(kGroup_B, "_"), output_column_name)
+  df <- merge(output_df_A, output_df_B, by=output_column_name[1], all=T, incomparables=NA)
+  return_list <- list(temp_sp[[kN_index]], temp_sp[[kNA_index]], temp_mr[[kN_index]], temp_mr[[kNA_index]], df)
+  names(return_list) <- c(paste0(kGroup_A, "_例数"), paste0(kGroup_A, "_欠測数"),
+                          paste0(kGroup_B, "_例数"), paste0(kGroup_B, "_欠測数"), NULL)
   return(return_list)
 }
 #' @title
@@ -61,15 +66,16 @@ SummaryValue <- function(input_column){
   names(return_list) <- c("Mean", "Sd.", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max.")
   return(list(length(target_column), length(target_na), return_list))
 }
-Summary_sp_mr <- function(df_sp, df_mr, column_name){
-  temp_sp <- SummaryValue(df_sp[ , column_name])
-  output_df_sp <- temp_sp[[3]]
-  temp_mr <- SummaryValue(df_mr[ , column_name])
-  output_df_mr <- temp_mr[[3]]
-  df <- cbind(data.frame(temp_sp[[3]]), data.frame(temp_mr[[3]]))
-  colnames(df) <- c(paste0("sp_", column_name), paste0("mr_", column_name))
-  return_list <- list(temp_sp[[1]], temp_sp[[2]], temp_mr[[1]], temp_mr[[2]], round(df, digits=1))
-  names(return_list) <- c("sp_例数", "sp_欠測数", "mr_例数", "mr_欠測数", NULL)
+#' @title
+Summary_Group <- function(df_A, df_B, column_name){
+  temp_sp <- SummaryValue(df_A[ , column_name])
+  temp_mr <- SummaryValue(df_B[ , column_name])
+  df <- cbind(data.frame(temp_sp[[kDfIndex]]), data.frame(temp_mr[[kDfIndex]]))
+  colnames(df) <- c(paste0(kGroup_A, "_", column_name), paste0(kGroup_B, "_", column_name))
+  return_list <- list(temp_sp[[kN_index]], temp_sp[[kNA_index]], temp_mr[[kN_index]], temp_mr[[kNA_index]],
+                      round(df, digits=1))
+  names(return_list) <- c(paste0(kGroup_A, "_例数"), paste0(kGroup_A, "_欠測数"),
+                          paste0(kGroup_B, "_例数"), paste0(kGroup_B, "_欠測数"), NULL)
   return(return_list)
 }
 AggregateCheckbox <- function(option_name, group_flag, checkbox_head, input_df_list){
@@ -83,8 +89,8 @@ AggregateCheckbox <- function(option_name, group_flag, checkbox_head, input_df_l
   for (i in 1:nrow(option_checkbox)) {
     temp_colname <- paste0(checkbox_head, option_checkbox[i, "Option..Value.code"])
     if (group_flag == T) {
-      temp_aggregate <- Aggregate_sp_mr(input_df_list[[1]], input_df_list[[2]], temp_colname,
-                                        c(checkbox_head, "count", "per"))
+      temp_aggregate <- Aggregate_Group(input_df_list[[1]], input_df_list[[2]], temp_colname,
+                                        c(checkbox_head, kCount, kPercentage))
       temp_aggregate_df <- temp_aggregate[[kTableIndex]]
       temp_T <- subset(temp_aggregate_df, temp_aggregate_df[ ,checkbox_head] == T)
     }
@@ -95,7 +101,7 @@ AggregateCheckbox <- function(option_name, group_flag, checkbox_head, input_df_l
   return(output_df)
 }
 KableList <- function(input_list){
-  return(list(unlist(input_list[1:4]), input_list[[kTableIndex]]))
+  return(list(unlist(input_list[1:kTableIndex-1]), input_list[[kTableIndex]]))
 }
 # Constant section ------
 kOption_csv_name <- "option.csv"
@@ -107,9 +113,15 @@ kExclude_FAS_flag <- 1
 kExclude_SAS_flag <- 2
 kAllocation_csv_name <- "RocStent_[0-9]{6}_[0-9]{4}.csv"
 kAllocation_csv_fileEncoding <- "cp932"
-kSP <- "A"
-kMR <- "B"
+kGroup_A <- "sp"
+kGroup_B <- "mr"
+kCount <- "count"
+kPercentage <- "per"
 kTableIndex <- 5
+kN_index <- 1
+kNA_index <- 2
+kDfIndex <- 3
+
 # initialize ------
 Sys.setenv("TZ" = "Asia/Tokyo")
 parent_path <- "/Users/admin/Desktop/NMC-RocStent"
@@ -174,3 +186,11 @@ all_qualification <- as.numeric(nrow(ptdata))
 # 全治療例
 all_treatment <- all_qualification
 # safety analysis set
+
+# sae_report
+sae_report <- sae_report[order(sae_report$SUBJID), ]
+sae_report <- merge(sae_report, allocation_csv, by.x="SUBJID", by.y="症例登録番号", all.x=T)
+# A:SP
+# B:MR
+sp_sae_report <- subset(sae_report, sae_report$自動割付 == "A")
+mr_sae_report <- subset(sae_report, sae_report$自動割付 == "B")
