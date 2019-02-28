@@ -12,7 +12,13 @@ library("readxl")
 #' target_column : Column to be summed
 #' column_name : Name of output columns
 #' @return
-#' data frame
+#' List of length 3
+#' [[1]] number of not NA in number of samples
+#' [[2]] number of NA in number of samples
+#' [[3]] dataframe of total and percentage
+#'       : columns[1]:items, columns[2]:number of items, columns[3]:percentage of items
+#' @examples
+#' AggregateLength(df$col1, "col1_count")
 AggregateLength <- function(target_column, column_name){
   target_na <- subset(target_column, is.na(target_column))
   target_not_na <- subset(target_column, !is.na(target_column))
@@ -23,28 +29,72 @@ AggregateLength <- function(target_column, column_name){
   return(list(length(target_not_na), length(target_na), df))
 }
 #' @title
-#'
+#' EditColnames
+#' @param
+#' header : first character string of column name
+#' columns_name : string for column name
+#' @return
+#' vector of string
+#' returns the first character string of the vector as it is
+#' for the second and subsequent cases, return the combination of arguments
+#' @examples
+#' EditColnames("a_", c("SEQ", "SUBJID", "OUTPUT"))
+#' return -> c("SEQ", "a_SUBJID", "a_OUTPUT")
 EditColnames <- function(header, columns_name){
   temp_colnames <- paste0(header, columns_name)
   temp_colnames[1] <- columns_name[1]
   return(temp_colnames)
 }
 #' @title
-#'
+#' Aggregate_Group
+#' @description
+#' execute 'AggregateLength' function with two dataframe
+#' @param
+#' df_A : input dataframe
+#' df_B : input dataframe
+#' input_column_name : Column to be summed
+#' output_column_name : Name of output columns
+#' @return
+#' List of length 3
+#' [[1]] number of not NA in number of samples
+#' [[2]] number of NA in number of samples
+#' [[3]] dataframe of total and percentage
+#'       : columns[1]:items, columns[2]:number of df_A's items, columns[3]:percentage of df_A's items
+#'       : columns[4]:number of df_B's items, columns[5]:percentage of df_B's items
+#' @examples
+#' Aggregate_Group(df_group_a, df_group_b, "ASA", c("ASA", "cnt", "per"))
 Aggregate_Group <- function(df_A, df_B, input_column_name, output_column_name){
-  temp_sp <- AggregateLength(df_A[, input_column_name], output_column_name)
-  output_df_A <- temp_sp[[kDfIndex]]
+  temp_A <- AggregateLength(df_A[, input_column_name], output_column_name)
+  output_df_A <- temp_A[[kDfIndex]]
   colnames(output_df_A) <- EditColnames(paste0(kGroup_A, "_"), output_column_name)
-  temp_mr <- AggregateLength(df_B[, input_column_name], output_column_name)
-  output_df_B <- temp_mr[[kDfIndex]]
+  temp_B <- AggregateLength(df_B[, input_column_name], output_column_name)
+  output_df_B <- temp_B[[kDfIndex]]
   colnames(output_df_B) <- EditColnames(paste0(kGroup_B, "_"), output_column_name)
   df <- merge(output_df_A, output_df_B, by=output_column_name[1], all=T, incomparables=NA)
-  return_list <- list(temp_sp[[kN_index]], temp_sp[[kNA_index]], temp_mr[[kN_index]], temp_mr[[kNA_index]], df)
+  return_list <- list(temp_A[[kN_index]], temp_A[[kNA_index]], temp_B[[kN_index]], temp_B[[kNA_index]], df)
   names(return_list) <- c(paste0(kGroup_A, "_例数"), paste0(kGroup_A, "_欠測数"),
                           paste0(kGroup_B, "_例数"), paste0(kGroup_B, "_欠測数"), NULL)
   return(return_list)
 }
 #' @title
+#' Aggregate_Sum_Group
+#' @description
+#' set the total in the ’Aggregate_Group’ function execution result
+#' @param
+#' df_A : input dataframe
+#' df_B : input dataframe
+#' input_column_name : Column to be summed
+#' output_column_name : Name of output column
+#' @return
+#' List of length 3
+#' [[1]] number of not NA in number of samples
+#' [[2]] number of NA in number of samples
+#' [[3]] dataframe of total and percentage
+#'       : columns[1]:items, columns[2]:number of df_A's items, columns[3]:percentage of df_A's items
+#'       : columns[4]:number of df_B's items, columns[5]:percentage of df_B's items
+#'       : columns[6]:number of df_A and df_B's items, columns[5]:percentage of df_A and df_B's items
+#' @examples
+#' Aggregate_Sum_Group(df_group_a, df_group_b, "over1_SpO2_n", "SPO2")
 Aggregate_Sum_Group <- function(df_A, df_B, input_column_name, output_column_name){
   col_A_count <- paste0(kGroup_A, "_", kCount)
   col_B_count <- paste0(kGroup_B, "_", kCount)
@@ -64,7 +114,13 @@ Aggregate_Sum_Group <- function(df_A, df_B, input_column_name, output_column_nam
 #' @param
 #' input_column : Column to be summarized
 #' @return
-#' Summary and standard deviation vector
+#' List of length 3
+#' [[1]] number of not NA in number of samples
+#' [[2]] number of NA in number of samples
+#' [[3]] Summary and standard deviation vector
+#'       : "Mean", "Sd.", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max."
+#' @examples
+#' SummaryValue(df$col2)
 SummaryValue <- function(input_column){
   target_na <- subset(input_column, is.na(input_column))
   target_column <- subset(input_column, !is.na(input_column))
@@ -80,17 +136,50 @@ SummaryValue <- function(input_column){
   return(list(length(target_column), length(target_na), return_list))
 }
 #' @title
+#' Summary_Group
+#' @description
+#' execute 'SummaryValue' function with two dataframe
+#' @param
+#' df_A : input dataframe
+#' df_B : input dataframe
+#' column_name : Column to be summarized
+#' @return
+#' List of length 3
+#' [[1]] number of not NA in number of samples
+#' [[2]] number of NA in number of samples
+#' [[3]] Summary and standard deviation vector
+#'       : "Mean", "Sd.", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max."
+#' @examples
+#' Summary_Group(df_group_a, df_group_b, "hight")
 Summary_Group <- function(df_A, df_B, column_name){
-  temp_sp <- SummaryValue(df_A[ , column_name])
-  temp_mr <- SummaryValue(df_B[ , column_name])
-  df <- cbind(data.frame(temp_sp[[kDfIndex]]), data.frame(temp_mr[[kDfIndex]]))
+  temp_A <- SummaryValue(df_A[ , column_name])
+  temp_B <- SummaryValue(df_B[ , column_name])
+  df <- cbind(data.frame(temp_A[[kDfIndex]]), data.frame(temp_B[[kDfIndex]]))
   colnames(df) <- c(paste0(kGroup_A, "_", column_name), paste0(kGroup_B, "_", column_name))
-  return_list <- list(temp_sp[[kN_index]], temp_sp[[kNA_index]], temp_mr[[kN_index]], temp_mr[[kNA_index]],
+  return_list <- list(temp_A[[kN_index]], temp_A[[kNA_index]], temp_B[[kN_index]], temp_B[[kNA_index]],
                       round(df, digits=1))
   names(return_list) <- c(paste0(kGroup_A, "_例数"), paste0(kGroup_A, "_欠測数"),
                           paste0(kGroup_B, "_例数"), paste0(kGroup_B, "_欠測数"), NULL)
   return(return_list)
 }
+#' @title
+#' AggregateCheckbox
+#' @description
+#' 'AggregateLength' function for checkbox
+#' @param
+#' option_name : option name in option.csv
+#' group_flag : fixed value 'T'
+#' checkbox_head : string excluding numbers from checkbox names
+#' input_df_list : list of data frames
+#' @return
+#' List of length 3
+#' [[1]] number of not NA in number of samples
+#' [[2]] number of NA in number of samples
+#' [[3]] dataframe of total and percentage
+#'       : columns[1]:items, columns[2]:number of df_A's items, columns[3]:percentage of df_A's items
+#'       : columns[4]:number of df_B's items, columns[5]:percentage of df_B's items
+#' @examples
+#' AggregateCheckbox("気道狭窄部位", T, "aw_", list(df_group_a, df_group_b))
 AggregateCheckbox <- function(option_name, group_flag, checkbox_head, input_df_list){
   if (group_flag == T) {
     col_count <- 5
@@ -98,6 +187,7 @@ AggregateCheckbox <- function(option_name, group_flag, checkbox_head, input_df_l
     col_count <- NA
   }
   option_checkbox <- subset(option_csv, Option.name == option_name)
+  # create an empty data frame
   df_table <- data.frame(matrix(rep(NA, 5), nrow=col_count))[numeric(0), ]
   for (i in 1:nrow(option_checkbox)) {
     temp_colname <- paste0(checkbox_head, option_checkbox[i, "Option..Value.code"])
@@ -113,6 +203,14 @@ AggregateCheckbox <- function(option_name, group_flag, checkbox_head, input_df_l
   output_df <- list(temp_aggregate[1], temp_aggregate[2], temp_aggregate[3], temp_aggregate[4], df_table)
   return(output_df)
 }
+#' @title
+#' KableList
+#' @description
+#' Format the list
+#' @param
+#' input_list : list of summary or aggregate results
+#' @return
+#' combined list of input lists
 KableList <- function(input_list){
   return(list(unlist(input_list[1:kTableIndex-1]), input_list[[kTableIndex]]))
 }
