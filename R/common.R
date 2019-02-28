@@ -45,6 +45,19 @@ Aggregate_Group <- function(df_A, df_B, input_column_name, output_column_name){
   return(return_list)
 }
 #' @title
+Aggregate_Sum_Group <- function(df_A, df_B, input_column_name, output_column_name){
+  col_A_count <- paste0(kGroup_A, "_", kCount)
+  col_B_count <- paste0(kGroup_B, "_", kCount)
+  col_sum_count <- paste0("sum_", kCount)
+
+  output_df <- Aggregate_Group(df_A, df_B, input_column_name, c(output_column_name, kCount, kPercentage))
+  output_df[[kTableIndex]][col_sum_count] <- apply(output_df[[kTableIndex]][c(col_A_count, col_B_count)], 1, sum)
+  output_df[[kTableIndex]]$sum_per <- apply(output_df[[kTableIndex]][col_sum_count], 2, function(x){
+    return(round(x / (output_df[[1]] + output_df[[3]]) * 100, digits=1))
+  })
+  return(output_df)
+}
+#' @title
 #' SummaryValue
 #' @description
 #' Return summary and standard deviation of the column of arguments
