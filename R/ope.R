@@ -6,6 +6,7 @@
 # Constant section ------
 kCheckBox_head <- "aw_stenosis_"
 # Main section ------
+#' # n=`r all_treatment`
 #' ## 気道狭窄状態
 #' ### 狭窄部位
 aw_stenosis <- AggregateCheckbox("気道狭窄部位", T, kCheckBox_head, list(sp_ptdata, mr_ptdata))
