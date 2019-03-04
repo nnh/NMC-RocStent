@@ -226,3 +226,12 @@ ConvertFactor <- function(df){
   }
   return(df)
 }
+#' @title
+#' GlmList
+GlmList <- function(str_formula, input_df, ci_level){
+  temp_glm <- glm(str_formula, data=input_df, family=binomial)
+  temp_summary <- summary(temp_glm)
+  temp_coef <- exp(coef(temp_summary))
+  temp_completed <- exp(confint(temp_glm, level=ci_level))
+  return(list(temp_glm, temp_summary, temp_coef, temp_completed))
+}

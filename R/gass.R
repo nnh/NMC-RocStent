@@ -15,13 +15,13 @@ temp_variable <- "PaCO2"
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 boxplot(sp_ptdata[ ,temp_variable], mr_ptdata[ ,temp_variable], xlab="Muscle relaxation	",
         ylab=temp_variable, names=c("SP", "MR"))
-#' ## 術中PaO2 平均値
-temp_variable <- "PaO2"
+#' ## 術中P/F 比平均値
+temp_variable <- "PF"
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 boxplot(sp_ptdata[ ,temp_variable], mr_ptdata[ ,temp_variable], xlab="Muscle relaxation	",
         ylab=temp_variable, names=c("SP", "MR"))
-#' ## 術中P/F 比平均値
-temp_variable <- "PF"
+#' ## 術中 SpO2 最低値
+temp_variable <- "SpO2_min"
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 boxplot(sp_ptdata[ ,temp_variable], mr_ptdata[ ,temp_variable], xlab="Muscle relaxation	",
         ylab=temp_variable, names=c("SP", "MR"))
