@@ -214,6 +214,9 @@ KableList <- function(input_list){
 }
 #' @title
 #' ConvertFactor
+#' @description
+#' Convert factor to numeric or string
+#' @param
 ConvertFactor <- function(df){
   for (i in 1:ncol(df)) {
     if (class(df[ , i]) == "factor") {
