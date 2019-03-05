@@ -10,7 +10,7 @@ kable(KableList(completed), format = "markdown", align="r")
 
 df_completed <- ptdata[, c("cancel1","自動割付", "pre_PF", "pre_aw_stenosis")]
 df_completed$cancel1 <- ifelse(df_completed$cancel1 == "完了", 0, 1)
-df_completed$allocation <- ifelse(df_completed$自動割付 == "A", 1, 0)
+df_completed$allocation <- ifelse(df_completed$自動割付 == "A", 0, 1)
 df_completed <- ConvertFactor(df_completed)
 #' # 検定
 temp_formula <- "cancel1 ~ allocation+pre_PF+pre_aw_stenosis"
