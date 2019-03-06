@@ -9,7 +9,7 @@ completed <- Aggregate_Sum_Group(sp_ptdata, mr_ptdata, "cancel1", "completed")
 kable(KableList(completed), format = "markdown", align="r")
 
 df_completed <- ptdata[, c("cancel1","自動割付", "pre_PF", "pre_aw_stenosis")]
-df_completed$cancel1 <- ifelse(df_completed$cancel1 == "完了", 0, 1)
+df_completed$cancel1 <- ifelse(df_completed$cancel1 == "中止", 0, 1)
 df_completed$allocation <- ifelse(df_completed$自動割付 == "A", 0, 1)
 df_completed <- ConvertFactor(df_completed)
 #' # 検定
@@ -20,7 +20,7 @@ glm_completed <- GlmList(temp_formula, df_completed, 0.90)
 #' ### formula
 formula(temp_formula)
 #' - cancel1
-#' -- 0:完了 1:中止
+#' -- 0:中止 1:完了
 temp_levels <- levels(factor(df_completed$allocation))
 #' - allocation
 #' -- 0:SP 1:MR
