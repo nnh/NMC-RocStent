@@ -217,6 +217,9 @@ KableList <- function(input_list){
 #' @description
 #' Convert factor to numeric or string
 #' @param
+#' df : data frame
+#' @return
+#' converted data frame
 ConvertFactor <- function(df){
   for (i in 1:ncol(df)) {
     if (class(df[ , i]) == "factor") {
@@ -231,10 +234,25 @@ ConvertFactor <- function(df){
 }
 #' @title
 #' GlmList
+#' @description
+#' Perform logistic regression analysis
+#' Return analysis result, odds ratio, confidence interval
+#' @param
+#' str_formula : value of option "formula" of glm function
+#' input_df : dataframe to be analyzed
+#' ci_level : percentage of confidence intervals
+#' @return
+#' List of length 4
+#' [[1]] return value of glm function
+#' [[2]] summary of return values of glm function
+#' [[3]] odds ratio
+#' [[4]] confidence intervals
+#' @examples
+#' glm_SpO2 <- GlmList("grm_SpO2_n ~ allocation+pre_PF+pre_aw_stenosis", df_SpO2, 0.90)
 GlmList <- function(str_formula, input_df, ci_level){
   temp_glm <- glm(str_formula, data=input_df, family=binomial)
   temp_summary <- summary(temp_glm)
   temp_coef <- exp(coef(temp_summary))
-  temp_completed <- exp(confint(temp_glm, level=ci_level))
+  temp_completed <- exp(confint(temp_glm, level=ci_level, type="Wald"))
   return(list(temp_glm, temp_summary, temp_coef, temp_completed))
 }
