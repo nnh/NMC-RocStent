@@ -72,6 +72,10 @@ for (i in 1:length(rawdata_list)) {
 ptdata <- ptdata[order(ptdata$SUBJID), ]
 allocation_csv <- allocation_csv[order(allocation_csv$症例登録番号), ]
 ptdata <- merge(ptdata, allocation_csv, by.x="SUBJID", by.y="症例登録番号", all=T)
+# for glm
+ptdata$allocation <- ifelse(ptdata$自動割付 == "A", 0, 1)
+ptdata$glm_pre_PF <- ifelse(ptdata$pre_PF == "250を超える", 0, 1)
+ptdata$glm_pre_aw_stenosis <- ifelse(ptdata$pre_aw_stenosis == "なし", 0, 1)
 # All registration
 all_ptdata <- ptdata
 all_registration <- as.numeric(nrow(all_ptdata))

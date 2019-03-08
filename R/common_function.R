@@ -233,7 +233,7 @@ ConvertFactor <- function(df){
   return(df)
 }
 #' @title
-#' GlmList
+#' GlmList_binomial
 #' @description
 #' Perform logistic regression analysis
 #' Return analysis result, odds ratio, confidence interval
@@ -249,7 +249,7 @@ ConvertFactor <- function(df){
 #' [[4]] confidence intervals
 #' @examples
 #' glm_SpO2 <- GlmList("grm_SpO2_n ~ allocation+pre_PF+pre_aw_stenosis", df_SpO2, 0.90)
-GlmList <- function(str_formula, input_df, ci_level){
+GlmList_binomial <- function(str_formula, input_df, ci_level){
   temp_glm <- glm(str_formula, data=input_df, family=binomial)
   temp_summary <- summary(temp_glm)
   temp_coef <- exp(coef(temp_glm))
