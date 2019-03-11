@@ -27,28 +27,18 @@ sp_ae <- sp_sae_report
 mr_ae <- mr_sae_report
 names(sp_ae)[which(names(sp_ae)=="sae1_trm")] <- temp_colname
 names(mr_ae)[which(names(mr_ae)=="sae1_trm")] <- temp_colname
+#+ results='asis'
 for (i in kCTCAEGrade) {
   temp_sp <- subset(sp_ae, sae1_grd == as.character(i))
   temp_mr <- subset(mr_ae, sae1_grd == as.character(i))
-  output_df_name <- paste0("output_ae_", as.character(i))
   if (nrow(temp_sp) > 0 | nrow(temp_mr) > 0) {
-    assign(output_df_name, SaeReport_Group(temp_colname, temp_sp, temp_mr))
+    temp_output <- SaeReport_Group(temp_colname, temp_sp, temp_mr)
   } else {
-    assign(output_df_name, list(NA, NA, NA, NA, "該当なし"))
+    temp_output <- list(NA, NA, NA, NA, "該当なし")
   }
+  cat("# ", paste0("Grade ", i), "  \n", "  \n")
+  cat("## n=", all_treatment, "  \n", "  \n")
+  print(kable(KableList(temp_output), format = "markdown", align="r"))
+  cat("  \n")
+  cat("  \n")
 }
-#' # Grade 1
-#' ## n=`r all_treatment`
-kable(KableList(output_ae_1), format="markdown", align="r")
-#' # Grade 2
-#' ## n=`r all_treatment`
-kable(KableList(output_ae_2), format="markdown", align="r")
-#' # Grade 3
-#' ## n=`r all_treatment`
-kable(KableList(output_ae_3), format="markdown", align="r")
-#' # Grade 4
-#' ## n=`r all_treatment`
-kable(KableList(output_ae_4), format="markdown", align="r")
-#' # Grade 5
-#' ## n=`r all_treatment`
-kable(KableList(output_ae_5), format="markdown", align="r")

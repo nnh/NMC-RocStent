@@ -17,4 +17,5 @@ temp_header_string_2 <- "0:低酸素イベントなし 1:低酸素イベント�
 df_biominal <- rbind(sp_SpO2_1, mr_SpO2_1)
 df_biominal$grm_SpO2_n <- ifelse(df_biominal$SpO2_n > 0, 1, 0)
 temp_formula <- "grm_SpO2_n ~ allocation + glm_pre_PF + glm_pre_aw_stenosis"
+temp_binomial_title <- "SpO2"
 render(paste0(source_path, "/glm_binomial.R"), output_dir=output_path, output_file=spo2_output_name)

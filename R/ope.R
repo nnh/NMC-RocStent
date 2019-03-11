@@ -13,77 +13,88 @@ aw_stenosis <- AggregateCheckbox("気道狭窄部位", T, kCheckBox_head, list(s
 kable(KableList(aw_stenosis), format = "markdown")
 #' ### 狭窄程度(%)
 #' ### n=`r all_treatment`
-aw_stenosis_p <- Summary_Group(sp_ptdata, mr_ptdata, "aw_stenosis_p")
-kable(KableList(aw_stenosis_p), format = "markdown", align="r")
+temp_variable <- "aw_stenosis_p"
+assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 麻酔時間(分)
 #' ### n=`r all_treatment`
-anesthesia_time <- Summary_Group(sp_ptdata, mr_ptdata, "anesthesia_time")
-kable(KableList(anesthesia_time), format = "markdown", align="r")
+temp_variable <- "anesthesia_time"
+assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 手術時間(分)
 #' ### n=`r all_treatment`
-ope_time <- Summary_Group(sp_ptdata, mr_ptdata, "ope_time")
-kable(KableList(ope_time), format = "markdown", align="r")
+temp_variable <- "ope_time"
+assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 術式
 #' ### n=`r all_treatment`
 temp_colname <- "ope_style"
-ope_style <- Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage))
-kable(KableList(ope_style), format = "markdown")
+assign(temp_colname,  Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage)))
+kable(KableList(get(temp_colname)), format="markdown", align="r")
 #' ## 合計無換気時間(秒)
 #' ### n=`r all_treatment`
-sum_venti_time <- Summary_Group(sp_ptdata, mr_ptdata, "sum_venti_time")
-kable(KableList(sum_venti_time), format = "markdown", align="r")
+temp_variable <- "sum_venti_time"
+assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 無換気回数
 #' ### n=`r all_treatment`
-non_ventilation <- Summary_Group(sp_ptdata, mr_ptdata, "non_ventilation")
-kable(KableList(non_ventilation), format = "markdown", align="r")
+temp_variable <- "non_ventilation"
+assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 最大無換気時間(秒)
 #' ### n=`r all_treatment`
-max_venti_time <- Summary_Group(sp_ptdata, mr_ptdata, "max_venti_time")
-kable(KableList(max_venti_time), format = "markdown", align="r")
+temp_variable <- "max_venti_time"
+assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## オペレータ(S、O)
 #' ### n=`r all_treatment`
 temp_colname <- "operator"
-operator <- Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage))
-kable(KableList(operator), format = "markdown")
+assign(temp_colname,  Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage)))
+kable(KableList(get(temp_colname)), format="markdown", align="r")
 #' ## ステントの種類
 #' ### n=`r all_treatment`
 temp_colname <- "stent"
-stent <- Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage))
-kable(KableList(stent), format = "markdown")
+assign(temp_colname,  Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage)))
+kable(KableList(get(temp_colname)), format="markdown", align="r")
 #' ## ステントの数
 #' ### n=`r all_treatment`
 temp_colname <- "stent_n"
-stent_n <- Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage))
-kable(KableList(stent_n), format = "markdown")
+assign(temp_colname,  Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage)))
+kable(KableList(get(temp_colname)), format="markdown", align="r")
 #' ## 焼灼の有無
 #' ### n=`r all_treatment`
 temp_colname <- "cauterization"
-cauterization <- Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage))
-kable(KableList(cauterization), format = "markdown")
+assign(temp_colname,  Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage)))
+kable(KableList(get(temp_colname)), format="markdown", align="r")
 #' ## バッキングの回数
 #' ### n=`r all_treatment`
-bucking <- Summary_Group(sp_ptdata, mr_ptdata, "bucking")
-kable(KableList(bucking), format = "markdown", align="r")
+temp_variable <- "bucking"
+assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 陽圧呼吸による実際のアシストの回数
 #' ### n=`r all_treatment`
-assist_n <- Summary_Group(sp_ptdata, mr_ptdata, "assist_n")
-kable(KableList(assist_n), format = "markdown", align="r")
+temp_variable <- "assist_n"
+assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 陽圧呼吸によるアシストの時間(秒)
 #' ### n=`r all_treatment`
-assist_time <- Summary_Group(sp_ptdata, mr_ptdata, "assist_time")
-kable(KableList(assist_time), format = "markdown", align="r")
+temp_variable <- "assist_time"
+assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## SpO2<95%となった回数(ノイズを除く)
 df_SpO2_1 <- subset(ptdata, ptdata$SpO2_1 == "なし")
 sp_SpO2_1 <- subset(sp_ptdata, SUBJID %in% df_SpO2_1$SUBJID)
 mr_SpO2_1 <- subset(mr_ptdata, SUBJID %in% df_SpO2_1$SUBJID)
-spO2_n <- Summary_Group(sp_SpO2_1, mr_SpO2_1, "SpO2_n")
+temp_variable <- "SpO2_n"
+spO2_n <- Summary_Group(sp_SpO2_1, mr_SpO2_1, temp_variable)
 ope_spo2_n <- spO2_n[[1]] + spO2_n[[3]]
 #' ### n=`r ope_spo2_n`
 kable(KableList(spO2_n), format = "markdown", align="r")
 #' ## 術中 SpO2 最低値(ノイズを除く)
 #' ### n=`r ope_spo2_n`
-SpO2_min <- Summary_Group(sp_SpO2_1, mr_SpO2_1, "SpO2_min")
-kable(KableList(SpO2_min), format = "markdown", align="r")
+temp_variable <- "SpO2_min"
+assign(temp_variable, Summary_Group(sp_SpO2_1, mr_SpO2_1, temp_variable))
+kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 術中血液ガス分析
 #' ### pH 平均値
 #' ### n=`r all_treatment`

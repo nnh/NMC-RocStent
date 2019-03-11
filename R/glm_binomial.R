@@ -1,3 +1,6 @@
+#' ---
+#' title: '`r temp_binomial_title`'
+#' ---
 # ' glm_binomial.R
 # ' Created date: 2019/3/8
 # ' author: mariko ohtsuka

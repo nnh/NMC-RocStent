@@ -14,6 +14,7 @@ kExclude_FAS_flag <- 1
 kExclude_SAS_flag <- 2
 kAllocation_csv_name <- "RocStent_[0-9]{6}_[0-9]{4}.csv"
 kAllocation_csv_fileEncoding <- "cp932"
+kRegist_date_colname <- "regist_date"
 # The following constants are used for common_function.R
 kGroup_A <- "sp"
 kGroup_B <- "mr"
@@ -60,6 +61,16 @@ birth_date_sex$生年月日 <- as.Date(as.numeric(birth_date_sex$生年月日), 
 sortlist <- order(as.numeric(birth_date_sex$症例登録番号))
 birth_date_sex <- birth_date_sex[sortlist, ]
 birth_date_sex <- subset(birth_date_sex, birth_date_sex[ ,5] == 0)
+# Merge birth date and sex
+ptdata <- merge(ptdata, birth_date_sex[ ,c("症例登録番号", "生年月日", "性別")],
+                    all=F, by.x="SUBJID", by.y="症例登録番号")
+ptdata$age <- NA
+for (i in 1:nrow(ptdata)) {
+  if (!is.na(ptdata[i, kRegist_date_colname])) {
+    ptdata[i, "age"] <- length(seq(ptdata[i, "生年月日"], ptdata[i, kRegist_date_colname], "year")) - 1
+  }
+}
+names(ptdata)[which(names(ptdata)=="性別")] <- "sex"
 # Input allocation.csv
 rawdata_list <- list.files(allocation_path)
 for (i in 1:length(rawdata_list)) {
