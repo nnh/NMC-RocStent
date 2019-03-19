@@ -1,9 +1,6 @@
 # Common processing
 # Created date: 2019/2/19
 # Author: mariko ohtsuka
-# library section ------
-# install.packages('readxl')
-library("readxl")
 # Constant section ------
 kOption_csv_name <- "option.csv"
 kOption_csv_fileEncoding <- "cp932"

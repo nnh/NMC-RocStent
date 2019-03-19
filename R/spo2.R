@@ -2,9 +2,6 @@
 # ' Created date: 2019/2/19
 # ' author: mariko ohtsuka
 spo2_output_name <- "spo2"
-if (saihi_flag == T) {
-  spo2_output_name <- paste0(spo2_output_name, "_fas")
-}
 spo2_output_name <- paste0(spo2_output_name, ".html")
 col_over1_SpO2_n <- "over1_SpO2_n"
 sp_SpO2_1[col_over1_SpO2_n] <- ifelse(sp_SpO2_1$SpO2_n > 0, "あり", "なし")

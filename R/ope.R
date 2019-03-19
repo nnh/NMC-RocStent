@@ -32,19 +32,19 @@ temp_colname <- "ope_style"
 assign(temp_colname,  Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage)))
 kable(KableList(get(temp_colname)), format="markdown", align="r")
 #' ## 合計無換気時間(秒)
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "sum_venti_time"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 無換気回数
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "non_ventilation"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 最大無換気時間(秒)
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "max_venti_time"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## オペレータ(S、O)
 #' ### n=`r all_treatment`
@@ -67,22 +67,22 @@ temp_colname <- "cauterization"
 assign(temp_colname,  Aggregate_Group(sp_ptdata, mr_ptdata, temp_colname, c(temp_colname, kCount, kPercentage)))
 kable(KableList(get(temp_colname)), format="markdown", align="r")
 #' ## バッキングの回数
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "bucking"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 陽圧呼吸による実際のアシストの回数
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "assist_n"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 陽圧呼吸によるアシストの時間(秒)
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "assist_time"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## SpO2<95%となった回数(ノイズを除く)
-df_SpO2_1 <- subset(ptdata, ptdata$SpO2_1 == "なし")
+df_SpO2_1 <- ptdata
 sp_SpO2_1 <- subset(sp_ptdata, SUBJID %in% df_SpO2_1$SUBJID)
 mr_SpO2_1 <- subset(mr_ptdata, SUBJID %in% df_SpO2_1$SUBJID)
 temp_variable <- "SpO2_n"
@@ -97,24 +97,24 @@ assign(temp_variable, Summary_Group(sp_SpO2_1, mr_SpO2_1, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ## 術中血液ガス分析
 #' ### pH 平均値
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "pH"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ### PaCO2 平均値
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "PaCO2"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ### PaO2 平均値
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "PaO2"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ### P/F 比平均値
-#' ### n=`r all_treatment`
+#' ### n=`r exclude_discontinued`
 temp_variable <- "PF"
-assign(temp_variable, Summary_Group(sp_ptdata, mr_ptdata, temp_variable))
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, temp_variable))
 kable(KableList(get(temp_variable)), format = "markdown", align="r")
 #' ### ETCO2 最大値(mmHg)
 #' ### n=`r all_treatment`

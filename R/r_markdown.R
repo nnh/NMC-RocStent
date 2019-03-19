@@ -4,6 +4,8 @@
 
 # library, function section ------
 # install.packages("rmarkdown")
+# install.packages('readxl')
+library(readxl)
 library(rmarkdown)
 library(rstudioapi)
 library(knitr)
@@ -22,7 +24,6 @@ if (this_program_path != "") {
 # all treatment
 source(paste0(source_path, "/common.R"))
 source(paste0(source_path, "/common_function.R"))
-saihi_flag <- F
 source(paste0(source_path, "/edit_ptdata.R"))
 render(paste0(source_path, "/demog.R"), output_dir=output_path, output_file="demog.html")
 render(paste0(source_path, "/ope.R"), output_dir=output_path, output_file="ope.html")
@@ -30,17 +31,3 @@ render(paste0(source_path, "/sae.R"), output_dir=output_path, output_file="sae.h
 source(paste0(source_path, "/spo2.R"))
 source(paste0(source_path, "/completed.R"))
 render(paste0(source_path, "/gass.R"), output_dir=output_path, output_file="gass.html")
-# initialize
-obj_list <- ls()
-# leave only "source_path", remove objects
-obj_list <- obj_list[-which(obj_list == "source_path")]
-rm(list=obj_list)
-# FAS
-source(paste0(source_path, "/common.R"))
-source(paste0(source_path, "/common_function.R"))
-saihi_flag <- T
-source(paste0(source_path, "/edit_ptdata.R"))
-render(paste0(source_path, "/demog.R"), output_dir=output_path, output_file="demog_fas.html")
-render(paste0(source_path, "/ope.R"), output_dir=output_path, output_file="ope_fas.html")
-source(paste0(source_path, "/spo2.R"))
-render(paste0(source_path, "/gass.R"), output_dir=output_path, output_file="gass_fas.html")
