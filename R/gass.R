@@ -3,22 +3,27 @@
 # ' author: mariko ohtsuka
 # ' output:
 # '   html_document:
+# SpO2
+temp_variable <- "exclude_discontinued_SpO2_min"
+assign(temp_variable, Summary_Group(sp_exclude_discontinued_ptdata, mr_exclude_discontinued_ptdata, "SpO2_min"))
+# plot option
 par(family = "HiraKakuProN-W3")
 #+ results='asis'
 header_str <- c("術中pH 平均値", "術中PaCO2 平均値", "術中P/F 比平均値", "術中 SpO2 最低値")
-header_n <- c(all_treatment, all_treatment, all_treatment, ope_spo2_n)
+header_n <- c(exclude_discontinued, exclude_discontinued, exclude_discontinued, exclude_discontinued)
+get_variable <- c("pH", "PaCO2", "PF","exclude_discontinued_SpO2_min")
 temp_variable <- c("pH", "PaCO2", "PF","SpO2_min")
 for (i in 1:length(temp_variable)) {
   cat("## ", header_str[i], "  \n", "  \n")
   cat("### n=", header_n[i], "  \n", "  \n")
-  print(kable(KableList(get(temp_variable[i])), format = "markdown", align="r"))
+  print(kable(KableList(get(get_variable[i])), format = "markdown", align="r"))
   cat("  \n")
-  boxplot(sp_ptdata[ ,temp_variable[i]], mr_ptdata[ ,temp_variable[i]], xlab="Muscle relaxation",
-          ylab=temp_variable[i], names=c("SP", "MR"))
+  boxplot(sp_exclude_discontinued_ptdata[ ,temp_variable[i]], mr_exclude_discontinued_ptdata[ ,temp_variable[i]],
+          xlab="Muscle relaxation", ylab=temp_variable[i], names=c("SP", "MR"))
   cat("  \n")
   # glm
   temp_formula <- paste0(temp_variable[i]," ~ allocation + glm_pre_PF + glm_pre_aw_stenosis")
-  rst <- glm(formula=temp_formula, data=ptdata, family=gaussian)
+  rst <- glm(formula=temp_formula, data=exclude_discontinued_ptdata, family=gaussian)
   smr <- summary(rst)
   cat("  \n")
   cat("### ", "formula", "  \n", "  \n")
