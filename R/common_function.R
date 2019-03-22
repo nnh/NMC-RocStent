@@ -22,7 +22,7 @@ AggregateLength <- function(target_column, column_name){
   target_not_na <- subset(target_column, !is.na(target_column))
   df <- aggregate(target_column, by=list(target_column), length, drop=F)
   df[is.na(df)] <- 0
-  df$per <- round(prop.table(df[2]) * 100, digits=1)
+  df$per <- round2(prop.table(df[2]) * 100, digits=1)
   colnames(df) <- column_name
   return(list(length(target_not_na), length(target_na), df))
 }
@@ -101,7 +101,7 @@ Aggregate_Sum_Group <- function(df_A, df_B, input_column_name, output_column_nam
   output_df <- Aggregate_Group(df_A, df_B, input_column_name, c(output_column_name, kCount, kPercentage))
   output_df[[kTableIndex]][col_sum_count] <- apply(output_df[[kTableIndex]][c(col_A_count, col_B_count)], 1, sum)
   output_df[[kTableIndex]]$sum_per <- apply(output_df[[kTableIndex]][col_sum_count], 2, function(x){
-    return(round(x / (output_df[[1]] + output_df[[3]]) * 100, digits=1))
+    return(round2(x / (output_df[[1]] + output_df[[3]]) * 100, digits=1))
   })
   return(output_df)
 }
@@ -122,13 +122,13 @@ Aggregate_Sum_Group <- function(df_A, df_B, input_column_name, output_column_nam
 SummaryValue <- function(input_column){
   target_na <- subset(input_column, is.na(input_column))
   target_column <- subset(input_column, !is.na(input_column))
-  temp_mean <- format(round(mean(target_column), digits=1), nsmall=1)
+  temp_mean <- format(round2(mean(target_column), digits=1), nsmall=1)
   temp_summary <- summary(target_column)
   temp_median <- median(target_column)
   temp_quantile <- quantile(target_column, type=2)
   temp_min <- min(target_column)
   temp_max <- max(target_column)
-  temp_sd <- format(round(sd(target_column), digits=1), nsmall=1)
+  temp_sd <- format(round2(sd(target_column), digits=1), nsmall=1)
   return_list <- c(temp_mean, temp_sd, temp_median, temp_quantile[2], temp_quantile[4], temp_min, temp_max)
   names(return_list) <- c("Mean", "Sd.", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max.")
   return(list(length(target_column), length(target_na), return_list))
@@ -254,4 +254,26 @@ GlmList_binomial <- function(str_formula, input_df, ci_level){
   temp_coef <- exp(coef(temp_glm))
   temp_confint <- exp(confint(temp_glm, level=ci_level, type="Wald"))
   return(list(temp_glm, temp_summary, temp_coef, temp_confint))
+}
+#' @title
+#' round2
+#' @description
+#' Customize round function
+#' Reference URL
+#' r - Round up from .5 - Stack Overflow
+#' https://stackoverflow.com/questions/12688717/round-up-from-5
+#' @param
+#' x : Number to be rounded
+#' digits : Number of decimal places
+#' @return
+#' Rounded number
+#' @examples
+#' round2(3.1415, 2)
+round2 <- function(x, digits) {
+  posneg = sign(x)
+  z = abs(x) * 10^digits
+  z = z + 0.5
+  z = trunc(z)
+  z = z / 10^digits
+  return(z * posneg)
 }
