@@ -7,8 +7,6 @@ kOption_csv_fileEncoding <- "cp932"
 kNA_lb <- -1
 kCTCAEGrade <- c(1:5)
 kBirth_Sex_xlsx <- "/RocStent_生年月日,性別.xlsx"
-kExclude_FAS_flag <- 1
-kExclude_SAS_flag <- 2
 kAllocation_csv_name <- "RocStent_[0-9]{6}_[0-9]{4}.csv"
 kAllocation_csv_fileEncoding <- "cp932"
 kRegist_date_colname <- "regist_date"

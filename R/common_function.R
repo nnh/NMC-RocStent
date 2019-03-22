@@ -122,13 +122,13 @@ Aggregate_Sum_Group <- function(df_A, df_B, input_column_name, output_column_nam
 SummaryValue <- function(input_column){
   target_na <- subset(input_column, is.na(input_column))
   target_column <- subset(input_column, !is.na(input_column))
-  temp_mean <- mean(target_column)
+  temp_mean <- format(round(mean(target_column), digits=1), nsmall=1)
   temp_summary <- summary(target_column)
   temp_median <- median(target_column)
   temp_quantile <- quantile(target_column, type=2)
   temp_min <- min(target_column)
   temp_max <- max(target_column)
-  temp_sd <- sd(target_column)
+  temp_sd <- format(round(sd(target_column), digits=1), nsmall=1)
   return_list <- c(temp_mean, temp_sd, temp_median, temp_quantile[2], temp_quantile[4], temp_min, temp_max)
   names(return_list) <- c("Mean", "Sd.", "Median", "1st Qu.", "3rd Qu.", "Min.", "Max.")
   return(list(length(target_column), length(target_na), return_list))
@@ -154,8 +154,7 @@ Summary_Group <- function(df_A, df_B, column_name){
   temp_B <- SummaryValue(df_B[ , column_name])
   df <- cbind(data.frame(temp_A[[kDfIndex]]), data.frame(temp_B[[kDfIndex]]))
   colnames(df) <- c(paste0(kGroup_A, "_", column_name), paste0(kGroup_B, "_", column_name))
-  return_list <- list(temp_A[[kN_index]], temp_A[[kNA_index]], temp_B[[kN_index]], temp_B[[kNA_index]],
-                      round(df, digits=1))
+  return_list <- list(temp_A[[kN_index]], temp_A[[kNA_index]], temp_B[[kN_index]], temp_B[[kNA_index]], df)
   names(return_list) <- c(paste0(kGroup_A, "_例数"), paste0(kGroup_A, "_欠測数"),
                           paste0(kGroup_B, "_例数"), paste0(kGroup_B, "_欠測数"), NULL)
   return(return_list)
