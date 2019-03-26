@@ -2,7 +2,7 @@
 Program Name : ope.sas
 Study Name : NMC-RocStent
 Author : Kato Kiroku
-Date : 2019-02-25
+Date : 2019-03-22
 SAS version : 9.4
 **************************************************************************;
 
@@ -54,6 +54,24 @@ data ptdata;
     rename id=SUBJID;
 run;
 
+proc import datafile="&raw.\RocStent_生年月日,性別.xlsx"
+                    out=age
+                    dbms=excel replace;
+                    getnames=yes;
+run;
+
+data age_2;
+    set age;
+    format f3 YYMMDD10.;
+    if f5=1 then delete;
+    if missing(f2) then delete;
+    keep f2 f3 f4;
+    rename f2=SUBJID;
+    label f2='症例登録番号';
+run;
+
+proc sort data=age_2; by SUBJID; run;
+
 proc import datafile="&raw.\RocStent_190215_1602.csv"
                     out=treatment
                     dbms=csv replace;
@@ -70,14 +88,46 @@ run;
 
 proc sort data=treatment_2; by SUBJID; run;
 
+proc import datafile="&raw.\RocStent_saihi.csv"
+                    out=saihi
+                    dbms=csv replace;
+run;
+
+data saihi;
+    set saihi;
+    SUBJID=input(VAR1, best12.);
+    drop VAR1;
+run;
+
+proc sort data=saihi; by SUBJID; run;
+
+data treatment_2;
+    merge treatment_2 age_2 (in=a) saihi;
+    by subjid;
+    if a;
+    if VAR2='1' then delete;
+    drop VAR2 VAR3;
+run;
+
+data ptdata;
+    merge ptdata saihi;
+    by subjid;
+    if var2=1 then delete;
+run;
+
+data ptdata_excluded;
+    set ptdata;
+    if var2=2 then delete;
+run;
+
 data frame;
-    format title grade $72. SP_count SP_percent MR_count MR_percent best12.;
+    format title grade $72. SP_count SP_percent MR_count MR_percent $12.;
     title=' ';
     grade=' ';
-    SP_count=0;
-    SP_percent=0;
-    MR_count=0;
-    MR_percent=0;
+    SP_count=' ';
+    SP_percent=' ';
+    MR_count=' ';
+    MR_percent=' ';
     output;
 run;
 
@@ -103,7 +153,12 @@ run;
 
     proc means data=&name._sp noprint;
         var &var;
-        output out=x&name._sp n=n mean=mean std=std median=median q1=q1 q3=q3 min=min max=max;
+        output out=x&name._sp n=n mean=m std=s median=median q1=q1 q3=q3 min=min max=max;
+    run;
+    data x&name._sp;
+        set x&name._sp;
+        mean=strip(put(round(m, 0.1), 8.1));
+        std=strip(put(round(s, 0.1), 8.1));
     run;
     proc transpose data=x&name._sp out=xx&name._sp prefix=sp;
         var n mean std median q1 q3 min max;
@@ -111,20 +166,24 @@ run;
 
     proc means data=&name._mr noprint;
         var &var;
-        output out=x&name._mr n=n mean=mean std=std median=median q1=q1 q3=q3 min=min max=max;
+        output out=x&name._mr n=n mean=m std=s median=median q1=q1 q3=q3 min=min max=max;
+    run;
+    data x&name._mr;
+        set x&name._mr;
+        mean=strip(put(round(m, 0.1), 8.1));
+        std=strip(put(round(s, 0.1), 8.1));
     run;
     proc transpose data=x&name._mr out=xx&name._mr prefix=mr;
         var n mean std median q1 q3 min max;
     run;
 
     data y&name;
+        format title grade $72. SP_count SP_percent MR_count MR_percent $12.;
         merge frame xx&name._sp xx&name._mr;
         if _N_=1 then title="&title.";
         grade=upcase(_NAME_);
-        SP_count=round(sp1, 0.1);
-        MR_count=round(mr1, 0.1);
-        call missing(SP_percent);
-        call missing(MR_percent);
+        SP_count=sp1;
+        MR_count=mr1;
         keep title grade SP_count SP_percent MR_count MR_percent;
     run;
 
@@ -146,25 +205,27 @@ run;
     run;
     data x&name._sp;
         set x&name._sp;
-        rename count=SP_count percent=SP_percent;
+        SP_count=strip(input(count, $12.));
+        SP_percent=strip(put(round(percent, 0.1), 8.1));
     run;
     proc freq data=&name._mr noprint;
         tables &var / out=x&name._mr;
     run;
     data x&name._mr;
         set x&name._mr;
-        rename count=MR_count percent=MR_percent;
+        MR_count=strip(input(count, $12.));
+        MR_percent=strip(put(round(percent, 0.1), 8.1));
     run;
 
     data frame_&name;
-        format title grade $72. &var &form SP_count SP_percent MR_count MR_percent best12.;
+        format title grade $72. &var &form SP_count SP_percent MR_count MR_percent $12.;
         do &var=&a2z;
           title=' ';
           grade=' ';
-          SP_count=0;
-          SP_percent=0;
-          MR_count=0;
-          MR_percent=0;
+          SP_count=' ';
+          SP_percent=' ';
+          MR_count=' ';
+          MR_percent=' ';
           output;
         end;
     run;
@@ -182,8 +243,6 @@ run;
         %if &form NE $24. %then %do;
             grade=put(&var, %FMTNUM2CHAR(&var));
         %end;
-        SP_percent=round(SP_percent, 0.1);
-        MR_percent=round(MR_percent, 0.1);
         drop &var;
     run;
 
@@ -192,6 +251,11 @@ run;
     data y&name;
         set xx&name;
         if _N_=1 then title="&title.";
+        if sp_count=' ' then sp_count='0';
+        if sp_percent=' ' then sp_percent='0';
+        if mr_count=' ' then mr_count='0';
+        if mr_percent=' ' then mr_percent='0';
+        keep title grade SP_count SP_percent MR_count MR_percent;
     run;
 
 %mend COUNT;
@@ -233,13 +297,13 @@ run;
 %COUNT (x_ope_style, ope_style, ptdata, FMT_16_F26., 0 to 3, 術式);
 
 *sum_venti_time;
-%IQR (x_sum_venti_time, sum_venti_time, ptdata, 合計無換気時間(秒));
+%IQR (x_sum_venti_time, sum_venti_time, ptdata_excluded, 合計無換気時間(秒));
 
 *non_ventilation;
-%IQR (x_non_ventilation, non_ventilation, ptdata, 無換気回数);
+%IQR (x_non_ventilation, non_ventilation, ptdata_excluded, 無換気回数);
 
 *max_venti_time;
-%IQR (x_max_venti_time, max_venti_time, ptdata, 最大無換気時間(秒));
+%IQR (x_max_venti_time, max_venti_time, ptdata_excluded, 最大無換気時間(秒));
 
 *operator;
 %COUNT (x_operator, operator, ptdata, FMT_13_F1., 0 to 1, オペレータ);
@@ -254,35 +318,31 @@ run;
 %COUNT (x_cauterization, cauterization, ptdata, FMT_10_F4., 1 to 2, 焼灼の有無);
 
 *bucking;
-%IQR (x_bucking, bucking, ptdata, バッキングの回数);
+%IQR (x_bucking, bucking, ptdata_excluded, バッキングの回数);
 
 *assist_n;
-%IQR (x_assist_n, assist_n, ptdata, 陽圧呼吸によるアシストの回数);
+%IQR (x_assist_n, assist_n, ptdata_excluded, 陽圧呼吸によるアシストの回数);
 
 *assist_time;
-%IQR (x_assist_time, assist_time, ptdata, 陽圧呼吸によるアシストの時間(秒));
+%IQR (x_assist_time, assist_time, ptdata_excluded, 陽圧呼吸によるアシストの時間(秒));
 
 *SpO2_n;
-data pppp;
-    set ptdata;
-    if SpO2_2 NE ' ' then delete;
-run;
-%IQR (x_SpO2_n, SpO2_n, pppp, %NRSTR(SpO2<95%となった回数(ノイズを除く)));
+%IQR (x_SpO2_n, SpO2_n, ptdata, %NRSTR(SpO2<95%となった回数(ノイズを除く)));
 
 *SpO2_min;
-%IQR (x_SpO2_min, SpO2_min, pppp, 術中SpO2最低値(ノイズを除く));
+%IQR (x_SpO2_min, SpO2_min, ptdata, 術中SpO2最低値(ノイズを除く));
 
 *pH;
-%IQR (x_pH, pH, ptdata, pH平均値);
+%IQR (x_pH, pH, ptdata_excluded, pH平均値);
 
 *PaCO2;
-%IQR (x_PaCO2, PaCO2, ptdata, PaCO2平均値);
+%IQR (x_PaCO2, PaCO2, ptdata_excluded, PaCO2平均値);
 
 *PaO2;
-%IQR (x_PaO2, PaO2, ptdata, PaO2平均値);
+%IQR (x_PaO2, PaO2, ptdata_excluded, PaO2平均値);
 
 *PF;
-%IQR (x_PF, PF, ptdata, P/F比平均値);
+%IQR (x_PF, PF, ptdata_excluded, P/F比平均値);
 
 *ETCO2;
 %IQR (x_ETCO2, ETCO2, ptdata, ETCO2最大値(mmHg));
@@ -322,13 +382,13 @@ run;
 
 
 data ope;
-    format title grade mr_count mr_percent sp_count sp_percent;
+    format title grade sp_count sp_percent mr_count mr_percent;
     set yx_aw_stenosis yx_anesthesia_time yx_ope_time yx_ope_style yx_sum_venti_time yx_non_ventilation
           yx_max_venti_time yx_operator yx_stent yx_stent_n yx_cauterization yx_bucking
           yx_assist_n yx_assist_time yx_SpO2_n yx_SpO2_min yx_pH yx_PaCO2 yx_PaO2 yx_PF
           yx_ETCO2 yx_max_BIS yx_min_BIS yx_min_TCI yx_max_TCI yx_mean_TCI
           yx_min_remifentanil yx_max_remifentanil yx_mean_remifentanil yx_fentanil
-          yx_total_rocuronium;
+          yx_total_remifentanil yx_total_rocuronium;
     label mr_count='MR群' mr_percent='MR群(%)' sp_count='SP群' sp_percent='SP群(%)';
 run;
 

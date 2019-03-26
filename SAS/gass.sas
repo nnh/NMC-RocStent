@@ -2,7 +2,7 @@
 Program Name : gass.sas
 Study Name : NMC-RocStent
 Author : Kato Kiroku
-Date : 2019-02-26
+Date : 2019-03-25
 SAS version : 9.4
 **************************************************************************;
 
@@ -54,6 +54,24 @@ data ptdata;
     rename id=SUBJID;
 run;
 
+proc import datafile="&raw.\RocStent_ê∂îNåéì˙,ê´ï .xlsx"
+                    out=age
+                    dbms=excel replace;
+                    getnames=yes;
+run;
+
+data age_2;
+    set age;
+    format f3 YYMMDD10.;
+    if f5=1 then delete;
+    if missing(f2) then delete;
+    keep f2 f3 f4;
+    rename f2=SUBJID;
+    label f2='è«ó·ìoò^î‘çÜ';
+run;
+
+proc sort data=age_2; by SUBJID; run;
+
 proc import datafile="&raw.\RocStent_190215_1602.csv"
                     out=treatment
                     dbms=csv replace;
@@ -70,6 +88,33 @@ run;
 
 proc sort data=treatment_2; by SUBJID; run;
 
+data treatment_2;
+    merge treatment_2 age_2 (in=a);
+    by subjid;
+    if a;
+run;
+
+proc import datafile="&raw.\RocStent_saihi.csv"
+                    out=saihi
+                    dbms=csv replace;
+run;
+
+data saihi;
+    set saihi;
+    SUBJID=input(VAR1, best12.);
+    drop VAR1;
+run;
+
+proc sort data=saihi; by SUBJID; run;
+
+data ptdata;
+    merge ptdata saihi;
+    by subjid;
+    if var2=1 then delete;
+    if var2=2 then delete;
+run;
+
+
 data frame;
     format title grade $72. SP_count MR_count best12.;
     title=' ';
@@ -84,19 +129,14 @@ run;
 data data4box;
     merge ptdata treatment_2;
     by subjid;
+    if group='é©î≠åƒãzåQ(SPåQ)' then group='SP';
+    else if group='ãÿíoä…ñÚìäó^åQ(MRåQ)' then group='MR';
+    label SpO2_min='Minimum SpO2 (%)' pH='Average pH' PaCO2='Average PaCO2' PF='Average P/F ratio' group='Group';
+    keep group pH PaCO2 PF SpO2_min;
 run;
 
 
 %macro IQR (name, var, rdata, title);
-
-    %if &var in (hight weight bmi) %then %do;
-        data ptdata;
-            set ptdata;
-            c=input(&var., best12.);
-            drop &var.;
-            rename c=&var.;
-        run;
-    %end;
 
     data &name._sp &name._mr;
         merge &rdata (in=a) treatment_2;
@@ -131,17 +171,45 @@ run;
         keep title grade SP_count MR_count;
     run;
 
-    ods graphics on;
-    ods rtf file="&out.\SAS\&var..rtf";
-    ods noptitle;
-    ods select sgplot;
+%mend IQR;
+
+
+data glm;
+    merge ptdata treatment_2 (in=a);
+    by SUBJID;
+    if a;
+run;
+
+ods graphics on;
+ods pdf file="&out.\SAS\gass_bp_glm.pdf" startpage=no;
+
+%macro PDF (var, title);
+
         proc sgplot data=data4box;
             vbox &var / category=group;
+            xaxis values=('SP' 'MR');
+            title &title;
         run;
-    ods rtf close;
-    ods graphics off;
 
-%mend IQR;
+    ods pdf startpage=no;
+
+        proc glm data=glm;
+            class group pre_PF pre_aw_stenosis;
+            model &var=group pre_PF pre_aw_stenosis / ss2 ss3;
+        run;
+
+    ods pdf startpage=yes;
+
+%mend PDF;
+
+%PDF (ph, 'Average pH');
+%PDF (paco2, 'Average PaCO2');
+%PDF (pf, 'Average P/F ratio');
+%PDF (SpO2_min, 'Minimum SpO2 (%)');
+
+ods pdf close;
+ods graphics off;
+
 
 *pH;
 %IQR (x_pH, pH, ptdata, èpíÜpHïΩãœíl);
@@ -156,7 +224,7 @@ run;
 %IQR (x_SpO2_min, SpO2_min, ptdata, èpíÜSpO2ç≈í·íl);
 
 data gass;
-    format title grade mr_count mr_percent sp_count sp_percent;
+    format title grade sp_count sp_percent mr_count mr_percent;
     set yx_pH yx_PaCO2 yx_PF yx_SpO2_min;
     label mr_count='MRåQ' sp_count='SPåQ';
 run;

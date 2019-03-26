@@ -2,7 +2,7 @@
 Program Name : spo2.sas
 Study Name : NMC-RocStent
 Author : Kato Kiroku
-Date : 2019-02-25
+Date : 2019-03-20
 SAS version : 9.4
 **************************************************************************;
 
@@ -48,6 +48,24 @@ data ptdata;
     else if SpO2_n>=1 then answer='Ç†ÇË';
 run;
 
+proc import datafile="&raw.\RocStent_ê∂îNåéì˙,ê´ï .xlsx"
+                    out=age
+                    dbms=excel replace;
+                    getnames=yes;
+run;
+
+data age_2;
+    set age;
+    format f3 YYMMDD10.;
+    if f5=1 then delete;
+    if missing(f2) then delete;
+    keep f2 f3 f4;
+    rename f2=SUBJID;
+    label f2='è«ó·ìoò^î‘çÜ';
+run;
+
+proc sort data=age_2; by SUBJID; run;
+
 proc import datafile="&raw.\RocStent_190215_1602.csv"
                     out=treatment
                     dbms=csv replace;
@@ -63,6 +81,32 @@ data treatment_2;
 run;
 
 proc sort data=treatment_2; by SUBJID; run;
+
+data treatment_2;
+    merge treatment_2 age_2 (in=a);
+    by subjid;
+    if a;
+run;
+
+proc import datafile="&raw.\RocStent_saihi.csv"
+                    out=saihi
+                    dbms=csv replace;
+run;
+
+data saihi;
+    set saihi;
+    SUBJID=input(VAR1, best12.);
+    drop VAR1;
+run;
+
+proc sort data=saihi; by SUBJID; run;
+
+data ptdata;
+    merge ptdata saihi;
+    by subjid;
+    if var2=1 then delete;
+run;
+
 
 %macro COUNT (name, var, rdata, a2z, title);
 
@@ -127,7 +171,7 @@ proc sort data=treatment_2; by SUBJID; run;
 %COUNT (x_SpO2_n, answer, ptdata, %NRSTR('Ç†ÇË', 'Ç»Çµ'), %NRSTR(SpO2<95%Ç∆Ç»Ç¡ÇΩâÒêî(ÉmÉCÉYÇèúÇ≠)));
 
 proc transpose data=yx_spo2_n out=tmp;
-    var grade MR_count MR_percent SP_count SP_percent;
+    var grade SP_count SP_percent MR_count MR_percent;
 run;
 
 data spo2;
@@ -143,8 +187,27 @@ data spo2;
     label col1='í·é_ëfÉCÉxÉìÉgÇ†ÇË' col2='Ç»Çµ' total='çáåv'  _NAME_='type';
 run;
 
-%ds2csv (data=spo2, runmode=b, csvfile=&out.\SAS\spo2.csv, labels=Y);
+%ds2csv (data=spo2, runmode=b, csvfile=&out.\SAS\spO2.csv, labels=Y);
 
-/*proc logistic data=Yx_spo2_n;*/
-/*    model MR_count=SP_count;*/
-/*run;*/
+
+
+data logistic;
+    merge ptdata treatment_2 (in=a);
+    by SUBJID;
+    if a;
+run;
+
+data logistic;
+    set logistic;
+run;
+
+ods graphics on;
+ods pdf file="&out.\SAS\spO2_logistic.pdf";
+ods noptitle;
+proc logistic data=logistic ALPHA=0.1;
+    class group pre_PF(ref=first param=ref) pre_aw_stenosis / ref=last param=ref;
+    model answer(event='Ç†ÇË')=group pre_PF pre_aw_stenosis;
+    oddsratio group;
+run;
+ods pdf close;
+ods graphics off;

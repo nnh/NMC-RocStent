@@ -2,7 +2,7 @@
 Program Name : demog.sas
 Study Name : NMC-RocStent
 Author : Kato Kiroku
-Date : 2019-02-25
+Date : 2019-03-22
 SAS version : 9.4
 **************************************************************************;
 
@@ -88,14 +88,45 @@ run;
 
 proc sort data=treatment_2; by SUBJID; run;
 
+data treatment_2;
+    merge treatment_2 age_2 (in=a);
+    by subjid;
+    if a;
+run;
+
+proc import datafile="&raw.\RocStent_saihi.csv"
+                    out=saihi
+                    dbms=csv replace;
+run;
+
+data saihi;
+    set saihi;
+    SUBJID=input(VAR1, best12.);
+    drop VAR1;
+run;
+
+proc sort data=saihi; by SUBJID; run;
+
+data ptdata;
+    merge ptdata saihi;
+    by subjid;
+    if var2=1 then delete;
+run;
+
+data age_2;
+    merge age_2 saihi;
+    by subjid;
+    if var2=1 then delete;
+run;
+
 data frame;
-    format title grade $36. SP_count SP_percent MR_count MR_percent best12.;
+    format title grade $36. SP_count SP_percent MR_count MR_percent $12.;
     title=' ';
     grade=' ';
-    SP_count=0;
-    SP_percent=0;
-    MR_count=0;
-    MR_percent=0;
+    SP_count=' ';
+    SP_percent=' ';
+    MR_count=' ';
+    MR_percent=' ';
     output;
 run;
 
@@ -121,7 +152,12 @@ run;
 
     proc means data=&name._sp noprint;
         var &var;
-        output out=x&name._sp n=n mean=mean std=std median=median q1=q1 q3=q3 min=min max=max;
+        output out=x&name._sp n=n mean=m std=s median=median q1=q1 q3=q3 min=min max=max;
+    run;
+    data x&name._sp;
+        set x&name._sp;
+        mean=strip(put(round(m, 0.1), 8.1));
+        std=strip(put(round(s, 0.1), 8.1));
     run;
     proc transpose data=x&name._sp out=xx&name._sp prefix=sp;
         var n mean std median q1 q3 min max;
@@ -129,20 +165,24 @@ run;
 
     proc means data=&name._mr noprint;
         var &var;
-        output out=x&name._mr n=n mean=mean std=std median=median q1=q1 q3=q3 min=min max=max;
+        output out=x&name._mr n=n mean=m std=s median=median q1=q1 q3=q3 min=min max=max;
+    run;
+    data x&name._mr;
+        set x&name._mr;
+        mean=strip(put(round(m, 0.1), 8.1));
+        std=strip(put(round(s, 0.1), 8.1));
     run;
     proc transpose data=x&name._mr out=xx&name._mr prefix=mr;
         var n mean std median q1 q3 min max;
     run;
 
     data y&name;
+        format title grade $72. SP_count SP_percent MR_count MR_percent $12.;
         merge frame xx&name._sp xx&name._mr;
         if _N_=1 then title="&title.";
         grade=upcase(_NAME_);
-        SP_count=round(sp1, 0.1);
-        MR_count=round(mr1, 0.1);
-        call missing(SP_percent);
-        call missing(MR_percent);
+        SP_count=sp1;
+        MR_count=mr1;
         keep title grade SP_count SP_percent MR_count MR_percent;
     run;
 
@@ -164,25 +204,27 @@ run;
     run;
     data x&name._sp;
         set x&name._sp;
-        rename count=SP_count percent=SP_percent;
+        SP_count=strip(input(count, $12.));
+        SP_percent=strip(put(round(percent, 0.1), 8.1));
     run;
     proc freq data=&name._mr noprint;
         tables &var / out=x&name._mr;
     run;
     data x&name._mr;
         set x&name._mr;
-        rename count=MR_count percent=MR_percent;
+        MR_count=strip(input(count, $12.));
+        MR_percent=strip(put(round(percent, 0.1), 8.1));
     run;
 
     data frame_&name;
-        format title grade $36. &var &form SP_count SP_percent MR_count MR_percent best12.;
+        format title grade $72. &var &form SP_count SP_percent MR_count MR_percent $12.;
         do &var=&a2z;
           title=' ';
           grade=' ';
-          SP_count=0;
-          SP_percent=0;
-          MR_count=0;
-          MR_percent=0;
+          SP_count=' ';
+          SP_percent=' ';
+          MR_count=' ';
+          MR_percent=' ';
           output;
         end;
     run;
@@ -194,14 +236,12 @@ run;
     data xx&name;
         merge frame_&name x&name._sp x&name._mr;
         by &var;
-        %if &form=$36. %then %do;
+        %if &form=$24. %then %do;
             grade=compress(&var.);
         %end;
-        %if &form NE $36. %then %do;
+        %if &form NE $24. %then %do;
             grade=put(&var, %FMTNUM2CHAR(&var));
         %end;
-        SP_percent=round(SP_percent, 0.1);
-        MR_percent=round(MR_percent, 0.1);
         drop &var;
     run;
 
@@ -210,6 +250,11 @@ run;
     data y&name;
         set xx&name;
         if _N_=1 then title="&title.";
+        if sp_count=' ' then sp_count='0';
+        if sp_percent=' ' then sp_percent='0';
+        if mr_count=' ' then mr_count='0';
+        if mr_percent=' ' then mr_percent='0';
+        keep title grade SP_count SP_percent MR_count MR_percent;
     run;
 
 %mend COUNT;
@@ -271,7 +316,7 @@ run;
 
 
 data demog;
-    format title grade mr_count mr_percent sp_count sp_percent;
+    format title grade sp_count sp_percent mr_count mr_percent;
     set yx_age yx_sex yx_height yx_weight yx_bmi yx_asa yx_cd yx_o2 yx_prepf
     yx_pre_aw_stenosis yx_ope yx_cardio yx_emphysema;
     label mr_count='MRŒQ' mr_percent='MRŒQ(%)' sp_count='SPŒQ' sp_percent='SPŒQ(%)';

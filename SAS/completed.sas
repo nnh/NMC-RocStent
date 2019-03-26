@@ -2,7 +2,7 @@
 Program Name : completed.sas
 Study Name : NMC-RocStent
 Author : Kato Kiroku
-Date : 2019-02-25
+Date : 2019-03-20
 SAS version : 9.4
 **************************************************************************;
 
@@ -94,18 +94,37 @@ data qualified;
     if a;
 run;
 
+
+proc import datafile="&raw.\RocStent_saihi.csv"
+                    out=saihi
+                    dbms=csv replace;
+run;
+
+data saihi;
+    set saihi;
+    SUBJID=input(VAR1, best12.);
+    drop VAR1;
+run;
+
+proc sort data=saihi; by SUBJID; run;
+
 data ptdata;
-    set libads.ptdata;
-    id=input(subjid, best12.);
-    keep id cancel1;
-    rename id=subjid;
+    merge ptdata saihi;
+    by subjid;
+    if var2=1 then delete;
+run;
+
+data age_2;
+    merge age_2 saihi;
+    by subjid;
+    if var2=1 then delete;
 run;
 
 
 %macro COUNT (name, var, rdata, form);
 
     data &name._sp &name._mr;
-        merge &rdata (in=a) qualified;
+        merge &rdata qualified (in=a);
         by SUBJID;
         if a;
         if GROUP='é©î≠åƒãzåQ(SPåQ)' then output &name._sp;
@@ -163,7 +182,7 @@ run;
 
 
 proc transpose data=ycompleted out=tmp;
-    var grade MR_count MR_percent SP_count SP_percent;
+    var grade SP_count SP_percent MR_count MR_percent;
 run;
 
 data completed;
@@ -174,9 +193,28 @@ data completed;
     else if _NAME_='SP_count' then do; group='SPåQ'; _NAME_='count'; end;
     else if _NAME_='SP_percent' then do; group='SPåQ'; _NAME_='percent'; end;
     if _N_=1 then delete;
-    total=col1+col2;
+    if _LABEL_='ìxêî' then total=col1+col2;
     drop _LABEL_;
     label col1='ÉvÉçÉgÉRÉãé°ó√äÆêã' col2='äÆêãÇ»Çµ' total='çáåv'  _NAME_='type';
 run;
 
 %ds2csv (data=completed, runmode=b, csvfile=&out.\SAS\completed.csv, labels=Y);
+
+
+
+data logistic;
+    merge ptdata qualified (in=a);
+    by SUBJID;
+    if a;
+run;
+
+ods graphics on;
+ods pdf file="&out.\SAS\completed_logistic.pdf";
+ods noptitle;
+proc logistic data=logistic ALPHA=0.1;
+    class group pre_PF(ref=first param=ref) pre_aw_stenosis / ref=last param=ref;
+    model cancel1(event='äÆóπ')=group pre_PF pre_aw_stenosis;
+    oddsratio group;
+run;
+ods pdf close;
+ods graphics off;
