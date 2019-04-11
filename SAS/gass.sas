@@ -2,7 +2,7 @@
 Program Name : gass.sas
 Study Name : NMC-RocStent
 Author : Kato Kiroku
-Date : 2019-03-25
+Date : 2019-04-02
 SAS version : 9.4
 **************************************************************************;
 
@@ -127,12 +127,15 @@ data frame;
 run;
 
 data data4box;
+    length visit 8;
     merge ptdata treatment_2;
     by subjid;
+    if group='Ž©”­ŒÄ‹zŒQ(SPŒQ)' then visit=1;
+    else if group='‹Ø’oŠÉ–ò“Š—^ŒQ(MRŒQ)' then visit=1.01;
     if group='Ž©”­ŒÄ‹zŒQ(SPŒQ)' then group='SP';
     else if group='‹Ø’oŠÉ–ò“Š—^ŒQ(MRŒQ)' then group='MR';
     label SpO2_min='Minimum SpO2 (%)' pH='Average pH' PaCO2='Average PaCO2' PF='Average P/F ratio' group='Group';
-    keep group pH PaCO2 PF SpO2_min;
+    keep group pH PaCO2 PF SpO2_min visit;
 run;
 
 
@@ -174,41 +177,105 @@ run;
 %mend IQR;
 
 
-data glm;
-    merge ptdata treatment_2 (in=a);
-    by SUBJID;
-    if a;
+ods pdf file="&out.\SAS\gass_mean_sd.pdf" startpage=never title=' ';
+options nodate nonumber papersize=A4 orientation=landscape;
+ods layout gridded columns=2;
+ods escapechar='^';
+
+ods region width=12cm;
+proc sgplot data=data4box;
+    vline visit / response=ph group=group stat=mean limitstat=stddev numstd=1 markers limitattrs=(color=black) markerattrs=(color=black);
+    xaxis values=(1 to 1.01 by 0.01) valuesdisplay=("SP" "MR") type=linear offsetmin=0.32 offsetmax=0.32 display=(NOLABEL);
+    yaxis label='Mean pH (%)';
+    keylegend "mybar" / title="";
+    title 'A.  Mean pH';
 run;
+ods region width=12cm;
+proc sgplot data=data4box;
+    vline visit / response=paco2 group=group stat=mean limitstat=stddev numstd=1 markers limitattrs=(color=black) markerattrs=(color=black);
+    xaxis values=(1 to 1.01 by 0.01) valuesdisplay=("SP" "MR") type=linear offsetmin=0.32 offsetmax=0.32 display=(NOLABEL);
+    yaxis label='Mean PaCO2 (%)';
+    keylegend "mybar" / title="";
+    title 'B.  Mean PaCO2';
+run;
+ods region width=12cm;
+proc sgplot data=data4box;
+    vline visit / response=pf group=group stat=mean limitstat=stddev numstd=1 markers limitattrs=(color=black) markerattrs=(color=black);
+    xaxis values=(1 to 1.01 by 0.01) valuesdisplay=("SP" "MR") type=linear offsetmin=0.32 offsetmax=0.32 display=(NOLABEL);
+    yaxis label='Mean P/F ratio (%)';
+    keylegend "mybar" / title="";
+    title 'C.  Mean P/F ratio';
+run;
+ods region width=12cm;
+proc sgplot data=data4box;
+    vline visit / response=SpO2_min group=group stat=mean limitstat=stddev numstd=1 markers limitattrs=(color=black) markerattrs=(color=black);
+    xaxis values=(1 to 1.01 by 0.01) valuesdisplay=("SP" "MR") type=linear offsetmin=0.32 offsetmax=0.32 display=(NOLABEL);
+    yaxis label='Minimum SpO2 (%)';
+    keylegend "mybar" / title="";
+    title 'D.  Minimum SpO2';
+run;
+title;
 
-ods graphics on;
-ods pdf file="&out.\SAS\gass_bp_glm.pdf" startpage=no;
-
-%macro PDF (var, title);
-
-        proc sgplot data=data4box;
-            vbox &var / category=group;
-            xaxis values=('SP' 'MR');
-            title &title;
-        run;
-
-    ods pdf startpage=no;
-
-        proc glm data=glm;
-            class group pre_PF pre_aw_stenosis;
-            model &var=group pre_PF pre_aw_stenosis / ss2 ss3;
-        run;
-
-    ods pdf startpage=yes;
-
-%mend PDF;
-
-%PDF (ph, 'Average pH');
-%PDF (paco2, 'Average PaCO2');
-%PDF (pf, 'Average P/F ratio');
-%PDF (SpO2_min, 'Minimum SpO2 (%)');
-
+ods layout end;
 ods pdf close;
-ods graphics off;
+
+/*ods pdf file="&out.\SAS\gass_mean_sd_temp.pdf" startpage=never;*/
+/*ods escapechar="^";*/
+/**/
+/*%sganno;*/
+/**/
+/*%let yaxislabel=Mean PaCO^{sub 2} (%);*/
+/*%let titlelabel=B.  Mean PaCO^{sub 2};*/
+/**/
+/*data anno_via_macros;*/
+/*  %sgtext(drawspace="wallpercent", x1=-20, y1=40, width=70, rotate=0, */
+/*          textweight="bold", justify="center",*/
+/*          label="&yaxislabel");*/
+/*  %sgtext(drawspace="wallpercent", x1=50, y1=105, width=70, rotate=0,*/
+/*          textweight="bold", justify="center",*/
+/*          label="&titlelabel");*/
+/*run;*/
+/**/
+/**/
+/*proc sgplot data=data4box sganno=anno_via_macros;*/
+/*    vline visit / response=paco2 group=group stat=mean limitstat=stddev numstd=1 markers limitattrs=(color=black) markerattrs=(color=black);*/
+/*    xaxis values=(1 to 1.01 by 0.01) valuesdisplay=("SP" "MR") type=linear offsetmin=0.32 offsetmax=0.32 display=(NOLABEL);*/
+/*/*    yaxis label='Mean PaCO^{sub 2} (%)';*/*/
+/*    keylegend "mybar" / title="";*/
+/*/*    title 'B.  Mean PaCO^{sub 2}';*/*/
+/*run;*/
+/*ods pdf close;*/
+
+/*%macro PDF (var, title);*/
+
+/*data glm;*/
+/*    merge ptdata treatment_2 (in=a);*/
+/*    by SUBJID;*/
+/*    if a;*/
+/*run;*/
+
+*boxplot;
+/*        proc sgplot data=data4box;*/
+/*            vbox &var / category=group;*/
+/*            xaxis values=('SP' 'MR');*/
+/*            title &title;*/
+/*        run;*/
+/**/
+/*    ods pdf startpage=no;*/
+/**/
+/*        proc glm data=glm;*/
+/*            class group pre_PF pre_aw_stenosis;*/
+/*            model &var=group pre_PF pre_aw_stenosis / ss2 ss3;*/
+/*        run;*/
+/**/
+/*    ods pdf startpage=yes;*/
+
+/*%mend PDF;*/
+
+/*%PDF (ph, 'Mean pH (%)');*/
+/*%PDF (paco2, 'Mean PaCO^{sub 2} (%)');*/
+/*%PDF (pf, 'Mean P/F ratio (%)');*/
+/*%PDF (SpO2_min, 'Minimum SpO2 (%)');*/
 
 
 *pH;

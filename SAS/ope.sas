@@ -2,7 +2,7 @@
 Program Name : ope.sas
 Study Name : NMC-RocStent
 Author : Kato Kiroku
-Date : 2019-03-22
+Date : 2019-03-26
 SAS version : 9.4
 **************************************************************************;
 
@@ -287,8 +287,11 @@ data yx_aw_stenosis;
     if _N_=1 then title="‹C“¹‚Ì‹·ó•”ˆÊ";
 run;
 
-*anesthesia_time;
+*aw_stenosis_p;
 %IQR (x_anesthesia_time, anesthesia_time, ptdata, –ƒŒŠÔ(•ª));
+
+*anesthesia_time;
+%IQR (x_aw_stenosis_p, aw_stenosis_p, ptdata, ‹·ó’ö“x(%));
 
 *ope_time;
 %IQR (x_ope_time, ope_time, ptdata, èpŠÔ(•ª));
@@ -383,7 +386,7 @@ run;
 
 data ope;
     format title grade sp_count sp_percent mr_count mr_percent;
-    set yx_aw_stenosis yx_anesthesia_time yx_ope_time yx_ope_style yx_sum_venti_time yx_non_ventilation
+    set yx_aw_stenosis yx_aw_stenosis_p yx_anesthesia_time yx_ope_time yx_ope_style yx_sum_venti_time yx_non_ventilation
           yx_max_venti_time yx_operator yx_stent yx_stent_n yx_cauterization yx_bucking
           yx_assist_n yx_assist_time yx_SpO2_n yx_SpO2_min yx_pH yx_PaCO2 yx_PaO2 yx_PF
           yx_ETCO2 yx_max_BIS yx_min_BIS yx_min_TCI yx_max_TCI yx_mean_TCI
