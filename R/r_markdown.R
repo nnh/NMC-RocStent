@@ -30,3 +30,5 @@ render(paste0(source_path, "/sae.R"), output_dir=output_path, output_file="sae.h
 source(paste0(source_path, "/spo2.R"))
 source(paste0(source_path, "/completed.R"))
 render(paste0(source_path, "/gass.R"), output_dir=output_path, output_file="gass.html")
+source(paste0(source_path, "/spo2_ci95.R"))
+source(paste0(source_path, "/completed_ci95.R"))
